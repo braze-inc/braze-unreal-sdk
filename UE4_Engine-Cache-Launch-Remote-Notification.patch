@@ -1,0 +1,56 @@
+From 8721597456f27cb4424b6917697e45ef0e53e0e5 Mon Sep 17 00:00:00 2001
+From: Darryl Davis <darryl@bitwisealchemy.com>
+Date: Tue, 22 Sep 2020 13:30:33 -0500
+Subject: [PATCH] Cache Launch Remote Notification
+
+---
+ .../Runtime/ApplicationCore/Private/IOS/IOSAppDelegate.cpp   | 5 +++++
+ .../Runtime/ApplicationCore/Public/IOS/IOSAppDelegate.h      | 2 ++
+ Engine/Source/Runtime/Launch/Private/IOS/LaunchIOS.cpp       | 2 ++
+ 3 files changed, 9 insertions(+)
+
+diff --git a/Engine/Source/Runtime/ApplicationCore/Private/IOS/IOSAppDelegate.cpp b/Engine/Source/Runtime/ApplicationCore/Private/IOS/IOSAppDelegate.cpp
+index 794f6b11e7d..adbfd15ca00 100644
+--- a/Engine/Source/Runtime/ApplicationCore/Private/IOS/IOSAppDelegate.cpp
++++ b/Engine/Source/Runtime/ApplicationCore/Private/IOS/IOSAppDelegate.cpp
+@@ -1648,6 +1648,11 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
+ 			FAppEntry::gLaunchLocalNotificationActivationEvent = FString(activationEvent);
+ 			FAppEntry::gLaunchLocalNotificationFireDate = [response.notification.date timeIntervalSince1970];
+ 		}
++	
++		FAppEntry::gLaunchRemoteNotification = response;
++		FAppEntry::gLaunchRemoteNotificationCompletionHandler = completionHandler;
++		[completionHandler retain];
++		return;
+ 	}
+ 	
+ 	HandleReceivedNotification(response.notification);
+diff --git a/Engine/Source/Runtime/ApplicationCore/Public/IOS/IOSAppDelegate.h b/Engine/Source/Runtime/ApplicationCore/Public/IOS/IOSAppDelegate.h
+index 7fecc52bb4c..9f761be1726 100644
+--- a/Engine/Source/Runtime/ApplicationCore/Public/IOS/IOSAppDelegate.h
++++ b/Engine/Source/Runtime/ApplicationCore/Public/IOS/IOSAppDelegate.h
+@@ -101,6 +101,8 @@ namespace FAppEntry
+ 	extern bool	gAppLaunchedWithLocalNotification;
+ 	extern FString	gLaunchLocalNotificationActivationEvent;
+ 	extern int32	gLaunchLocalNotificationFireDate;
++	extern UNNotificationResponse* gLaunchRemoteNotification;
++	extern void    (^gLaunchRemoteNotificationCompletionHandler)();
+ }
+ 
+ APPLICATIONCORE_API
+diff --git a/Engine/Source/Runtime/Launch/Private/IOS/LaunchIOS.cpp b/Engine/Source/Runtime/Launch/Private/IOS/LaunchIOS.cpp
+index e3bb4929be2..1f6b3b09b14 100644
+--- a/Engine/Source/Runtime/Launch/Private/IOS/LaunchIOS.cpp
++++ b/Engine/Source/Runtime/Launch/Private/IOS/LaunchIOS.cpp
+@@ -533,6 +533,8 @@ void FAppEntry::Shutdown()
+ bool	FAppEntry::gAppLaunchedWithLocalNotification;
+ FString	FAppEntry::gLaunchLocalNotificationActivationEvent;
+ int32	FAppEntry::gLaunchLocalNotificationFireDate;
++UNNotificationResponse* FAppEntry::gLaunchRemoteNotification = nullptr;
++void    (^FAppEntry::gLaunchRemoteNotificationCompletionHandler)() = nullptr;
+ 
+ FString GSavedCommandLine;
+ 
+-- 
+2.27.0.windows.1
+

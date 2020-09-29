@@ -1,0 +1,62 @@
+From 0defbf715ab717d4aadb2fbaad06897bad41d636 Mon Sep 17 00:00:00 2001
+From: Darryl Davis <darryl@bitwisealchemy.com>
+Date: Thu, 17 Sep 2020 17:08:16 -0500
+Subject: [PATCH] Read cached remote launch notification on init
+
+---
+ .../Source/Braze/Private/IOS/BrazeIOS.cpp     | 22 ++++++++++++++-----
+ 1 file changed, 17 insertions(+), 5 deletions(-)
+
+diff --git a/BrazeSample/Plugins/Braze/Source/Braze/Private/IOS/BrazeIOS.cpp b/BrazeSample/Plugins/Braze/Source/Braze/Private/IOS/BrazeIOS.cpp
+index 07025e3..18c6ac7 100644
+--- a/BrazeSample/Plugins/Braze/Source/Braze/Private/IOS/BrazeIOS.cpp
++++ b/BrazeSample/Plugins/Braze/Source/Braze/Private/IOS/BrazeIOS.cpp
+@@ -46,28 +46,40 @@ bool UBrazeIOS::Init(const UBrazeConfig& Config)
+ 
+ 	// Enable Push Notifications
+ 	FCoreDelegates::ApplicationRegisteredForRemoteNotificationsDelegate.AddUObject(this, &UBrazeIOS::ApplicationRegisteredForRemoteNotifications);
++	
+ 	dispatch_sync(dispatch_get_main_queue(), ^ {
+ 		UNAuthorizationOptions options = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
+-			
++
+ 		if (@available(iOS 12.0,*)) {
+ 			options = options | UNAuthorizationOptionProvisional;
+ 		}
+-			
++
+ 		UNUserNotificationCenter* Center = [UNUserNotificationCenter currentNotificationCenter];
+-		
++
+ 		if (Config.bEnableIOSPushDelegate)
+ 		{
+ 			BrazeNotificationDelegate* NotificationDelegate = [BrazeNotificationDelegate SharedInstance];
+ 			Center.delegate = NotificationDelegate;
+ 			NotificationDelegate.ShowPushNotificationsWhenAppInForeground = Config.bShowPushWhenAppInForeground;
+ 		}
+-		
++
++		if (FAppEntry::gLaunchRemoteNotification != nullptr)
++		{
++			[[Appboy sharedInstance] userNotificationCenter: Center
++							 didReceiveNotificationResponse: FAppEntry::gLaunchRemoteNotification
++									  withCompletionHandler: FAppEntry::gLaunchRemoteNotificationCompletionHandler];
++
++			[FAppEntry::gLaunchRemoteNotificationCompletionHandler release];
++			FAppEntry::gLaunchRemoteNotification = nullptr;
++			FAppEntry::gLaunchRemoteNotificationCompletionHandler = nullptr;
++		}
++
+ 		[Center requestAuthorizationWithOptions: options
+ 		                      completionHandler: ^(BOOL granted, NSError * _Nullable error)
+ 		{
+ 			[[Appboy sharedInstance] pushAuthorizationFromUserNotificationCenter: granted];
+ 		}];
+-		
++
+ 		[[UIApplication sharedApplication] registerForRemoteNotifications];
+ 	});
+ 	
+-- 
+2.24.3 (Apple Git-128)
+
