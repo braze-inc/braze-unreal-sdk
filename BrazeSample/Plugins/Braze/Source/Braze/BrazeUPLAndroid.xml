@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Braze plugin additions-->
+<root xmlns:android="http://schemas.android.com/apk/res/android">
+	<!-- init section is always evaluated once per architecture -->
+	<init>
+		<log text="Braze SDK init"/>
+	
+		<setBoolFromProperty result="bFCMEnabled" ini="Engine" section="/Script/Braze.BrazeConfig" property="bEnableFirebaseCloudMessagingSupport" default="false"/>
+		<if condition="bFCMEnabled">
+			<true>
+				<log text="Braze SDK: Firebase Cloud Messaging Enabled" />
+			</true>
+		</if>
+	</init>
+
+	<!-- optional files or directories to copy to Intermediate/Android/APK -->
+	<gradleCopies>
+		<if condition="bFCMEnabled">
+			<true>
+				<copyFile src="$S(BuildDir)/google-services.json" dst="$S(BuildDir)/gradle/app/google-services.json" force="false"/>
+			</true>
+		</if>
+	</gradleCopies>
+
+	<!--  optional base build.gradle buildscript additions -->
+	<buildscriptGradleAdditions>
+		<if condition="bFCMEnabled">
+			<true>
+				<insert>
+	dependencies {
+		classpath 'com.google.gms:google-services:4.3.3' // google-services plugin
+	} 
+				</insert>
+			</true>
+		</if>
+	</buildscriptGradleAdditions>
+	
+	<!-- optional app build.gradle additions -->
+	<buildGradleAdditions>
+		<insert>
+	repositories {
+		maven { url "https://appboy.github.io/appboy-android-sdk/sdk" }
+	}
+
+	dependencies {
+		implementation 'com.appboy:android-sdk-ui:8.0.+'
+	}
+	
+		</insert>
+		
+		<!-- Firebase Cloud Messaging dependencies -->
+		<if condition="bFCMEnabled">
+			<true>
+				<insert>
+	dependencies {
+		implementation 'com.google.firebase:firebase-core:11.8.0'
+		implementation 'com.google.firebase:firebase-messaging:11.8.0'
+	}
+	
+	apply plugin: 'com.google.gms.google-services'
+				</insert>
+			</true>
+		</if>
+	</buildGradleAdditions>
+ 
+	<!-- optional updates applied to AndroidManifest.xml -->
+	<androidManifestUpdates>
+		<addPermission android:name="android.permission.INTERNET" />
+		<addPermission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+		<if condition="bFCMEnabled">
+			<true>
+				<addElements tag="application">
+					<service
+						android:name="com.appboy.AppboyFirebaseMessagingService"
+						android:exported="false">
+						<intent-filter>
+							<action android:name="com.google.firebase.MESSAGING_EVENT" />
+						</intent-filter>
+					</service>
+				</addElements>
+			</true>
+		</if>
+	</androidManifestUpdates>
+
+</root>
