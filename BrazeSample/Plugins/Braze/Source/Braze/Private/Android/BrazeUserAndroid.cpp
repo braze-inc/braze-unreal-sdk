@@ -9,39 +9,39 @@
 
 namespace {
 	template <typename ValueType>
-	bool CallSetCustomUserAttributesWithParams(const jobject& AppboyUser, const ANSICHAR* Signature, const FString& AttributeKey, const ValueType& Value)
+	bool CallSetCustomUserAttributesWithParams(const jobject& BrazeUser, const ANSICHAR* Signature, const FString& AttributeKey, const ValueType& Value)
 	{
 		JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
 		const FScopedJavaObject<jstring> AttributeKeyString = FJavaHelper::ToJavaString(Env, AttributeKey);
 
-		const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-		const jmethodID MethodSetCustomUserAttribute = FJavaWrapper::FindMethod(Env, ClassAppboyUser, "setCustomUserAttribute", Signature, false);
+		const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+		const jmethodID MethodSetCustomUserAttribute = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setCustomUserAttribute", Signature, false);
 
-		return FJavaWrapper::CallBooleanMethod(Env, AppboyUser, MethodSetCustomUserAttribute, *AttributeKeyString, Value);
+		return FJavaWrapper::CallBooleanMethod(Env, BrazeUser, MethodSetCustomUserAttribute, *AttributeKeyString, Value);
 	}
 
 	template <>
-	bool CallSetCustomUserAttributesWithParams(const jobject& AppboyUser, const ANSICHAR* Signature, const FString& AttributeKey, const FString& Value)
+	bool CallSetCustomUserAttributesWithParams(const jobject& BrazeUser, const ANSICHAR* Signature, const FString& AttributeKey, const FString& Value)
 	{
 		JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
 		const FScopedJavaObject<jstring> AttributeKeyString = FJavaHelper::ToJavaString(Env, AttributeKey);
 		const FScopedJavaObject<jstring> ValueString = FJavaHelper::ToJavaString(Env, Value);
 
-		const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-		const jmethodID MethodSetCustomUserAttribute = FJavaWrapper::FindMethod(Env, ClassAppboyUser, "setCustomUserAttribute", Signature, false);
+		const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+		const jmethodID MethodSetCustomUserAttribute = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setCustomUserAttribute", Signature, false);
 		
-		return FJavaWrapper::CallBooleanMethod(Env, AppboyUser, MethodSetCustomUserAttribute, *AttributeKeyString, *ValueString);
+		return FJavaWrapper::CallBooleanMethod(Env, BrazeUser, MethodSetCustomUserAttribute, *AttributeKeyString, *ValueString);
 	}
 
-	bool CallUserProfileMethodWithStringParam(const jobject& AppboyUser, const ANSICHAR* MethodName, const FString& Param)
+	bool CallUserProfileMethodWithStringParam(const jobject& BrazeUser, const ANSICHAR* MethodName, const FString& Param)
 	{
 		JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
 		const FScopedJavaObject<jstring> ParamString = FJavaHelper::ToJavaString(Env, Param);
 
-		const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-		const jmethodID Method = FJavaWrapper::FindMethod(Env, ClassAppboyUser, MethodName, "(Ljava/lang/String;)Z", false);
+		const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+		const jmethodID Method = FJavaWrapper::FindMethod(Env, ClassBrazeUser, MethodName, "(Ljava/lang/String;)Z", false);
 
-		return FJavaWrapper::CallBooleanMethod(Env, AppboyUser, Method, *ParamString);
+		return FJavaWrapper::CallBooleanMethod(Env, BrazeUser, Method, *ParamString);
 	}
 }
 
@@ -62,8 +62,8 @@ bool UBrazeUserAndroid::AddAlias(const FString& Alias, const FString& Label)
 	const FScopedJavaObject<jstring> AliasString = FJavaHelper::ToJavaString(Env, Alias);
 	const FScopedJavaObject<jstring> LabelString = FJavaHelper::ToJavaString(Env, Label);
 
-	const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-	const jmethodID MethodAddAlias = FJavaWrapper::FindMethod(Env, ClassAppboyUser, "addAlias", "(Ljava/lang/String;Ljava/lang/String;)Z", false);
+	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+	const jmethodID MethodAddAlias = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "addAlias", "(Ljava/lang/String;Ljava/lang/String;)Z", false);
 	
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodAddAlias, *AliasString, *LabelString);
 }
@@ -103,8 +103,8 @@ bool UBrazeUserAndroid::SetCustomUserAttributeDate(const FString& AttributeKey, 
 	JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
 	
 	const FScopedJavaObject<jstring> AttributeKeyString = FJavaHelper::ToJavaString(Env, AttributeKey);
-	const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-	const jmethodID MethodSetCustomUserAttributeToSecondsFromEpoch = FJavaWrapper::FindMethod(Env, ClassAppboyUser, "setCustomUserAttributeToSecondsFromEpoch", "(Ljava/lang/String;J)Z", false);
+	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+	const jmethodID MethodSetCustomUserAttributeToSecondsFromEpoch = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setCustomUserAttributeToSecondsFromEpoch", "(Ljava/lang/String;J)Z", false);
 
 	int64 UnixTimestamp = Date.ToUnixTimestamp();
 	
@@ -117,8 +117,8 @@ bool UBrazeUserAndroid::SetCustomAttributeArray(const FString& AttributeKey, con
 	const FScopedJavaObject<jstring> AttributeKeyString = FJavaHelper::ToJavaString(Env, AttributeKey);
 	const FScopedJavaObject<jobjectArray> ValuesArray = BrazeConversions::StringArrayToJObjectArray(Values);
 
-	const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-	const jmethodID MethodSetCustomAttributeArray = FJavaWrapper::FindMethod(Env, ClassAppboyUser, "setCustomAttributeArray", "(Ljava/lang/String;[Ljava/lang/String;)Z", false);
+	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+	const jmethodID MethodSetCustomAttributeArray = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setCustomAttributeArray", "(Ljava/lang/String;[Ljava/lang/String;)Z", false);
 
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodSetCustomAttributeArray, *AttributeKeyString, *ValuesArray);
 }
@@ -128,8 +128,8 @@ bool UBrazeUserAndroid::UnsetCustomAttribute(const FString& AttributeKey)
 	JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
 	const FScopedJavaObject<jstring> AttributeKeyString = FJavaHelper::ToJavaString(Env, AttributeKey);
 
-	const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-	const jmethodID MethodUnsetCustomAttribute = FJavaWrapper::FindMethod(Env, ClassAppboyUser, "unsetCustomUserAttribute", "(Ljava/lang/String;)Z", false);
+	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+	const jmethodID MethodUnsetCustomAttribute = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "unsetCustomUserAttribute", "(Ljava/lang/String;)Z", false);
 
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodUnsetCustomAttribute, *AttributeKeyString);
 }
@@ -139,8 +139,8 @@ bool UBrazeUserAndroid::IncrementCustomUserAttribute(const FString& AttributeKey
 	JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
 	const FScopedJavaObject<jstring> AttributeKeyString = FJavaHelper::ToJavaString(Env, AttributeKey);
 
-	const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-	const jmethodID MethodIncrementCustomUserAttribute = FJavaWrapper::FindMethod(Env, ClassAppboyUser, "incrementCustomUserAttribute", "(Ljava/lang/String;I)Z", false);
+	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+	const jmethodID MethodIncrementCustomUserAttribute = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "incrementCustomUserAttribute", "(Ljava/lang/String;I)Z", false);
 
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodIncrementCustomUserAttribute, *AttributeKeyString, IncrementValue);
 }
@@ -151,8 +151,8 @@ bool UBrazeUserAndroid::AddToCustomAttributeArray(const FString& AttributeKey, c
 	const FScopedJavaObject<jstring> AttributeKeyString = FJavaHelper::ToJavaString(Env, AttributeKey);
 	const FScopedJavaObject<jstring> ValueString = FJavaHelper::ToJavaString(Env, Value);
 
-	const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-	const jmethodID MethodAddToCustomAttributeArray = FJavaWrapper::FindMethod(Env, ClassAppboyUser, "addToCustomAttributeArray", "(Ljava/lang/String;Ljava/lang/String;)Z", false);
+	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+	const jmethodID MethodAddToCustomAttributeArray = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "addToCustomAttributeArray", "(Ljava/lang/String;Ljava/lang/String;)Z", false);
 
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodAddToCustomAttributeArray, *AttributeKeyString, *ValueString);
 }
@@ -163,8 +163,8 @@ bool UBrazeUserAndroid::RemoveFromCustomAttributeArray(const FString& AttributeK
 	const FScopedJavaObject<jstring> AttributeKeyString = FJavaHelper::ToJavaString(Env, AttributeKey);
 	const FScopedJavaObject<jstring> ValueString = FJavaHelper::ToJavaString(Env, Value);
 
-	const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-	const jmethodID MethodRemoveFromCustomAttributeArray = FJavaWrapper::FindMethod(Env, ClassAppboyUser, "removeFromCustomAttributeArray", "(Ljava/lang/String;Ljava/lang/String;)Z", false);
+	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+	const jmethodID MethodRemoveFromCustomAttributeArray = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "removeFromCustomAttributeArray", "(Ljava/lang/String;Ljava/lang/String;)Z", false);
 
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodRemoveFromCustomAttributeArray, *AttributeKeyString, *ValueString);
 }
@@ -189,8 +189,8 @@ bool UBrazeUserAndroid::SetGender(EBrazeGender Gender)
 	JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
 	const FScopedJavaObject<jobject> GenderValue = BrazeConversions::EBrazeGenderToJObject(Gender);
 
-	const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-	const jmethodID MethodSetGender = FJavaWrapper::FindMethod(Env, ClassAppboyUser, "setGender", "(Lcom/appboy/enums/Gender;)Z", false);
+	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+	const jmethodID MethodSetGender = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setGender", "(Lcom/appboy/enums/Gender;)Z", false);
 
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodSetGender, *GenderValue);
 }
@@ -220,8 +220,8 @@ bool UBrazeUserAndroid::SetDateOfBirth(int32 Year, EBrazeMonth Month, int32 Day)
 	JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
 	const FScopedJavaObject<jobject> MonthValue = BrazeConversions::EBrazeMonthToJObject(Month);
 
-	const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-	const jmethodID MethodSetDateOfBirth = FJavaWrapper::FindMethod(Env, ClassAppboyUser, "setDateOfBirth", "(ILcom/appboy/enums/Month;I)Z", false);
+	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+	const jmethodID MethodSetDateOfBirth = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setDateOfBirth", "(ILcom/appboy/enums/Month;I)Z", false);
 
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodSetDateOfBirth, Year, *MonthValue, Day);
 }
@@ -231,8 +231,8 @@ bool UBrazeUserAndroid::SetPushSubscriptionType(EBrazeNotificationSubscriptionTy
 	JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
 	const FScopedJavaObject<jobject> SubscriptionTypeValue = BrazeConversions::EBrazeNotificationSubscriptionTypeToJObject(SubscriptionType);
 
-	const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-	const jmethodID MethodSetPushSubscriptionType = FJavaWrapper::FindMethod(Env, ClassAppboyUser, "setPushNotificationSubscriptionType", "(Lcom/appboy/enums/NotificationSubscriptionType;)Z", false);
+	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+	const jmethodID MethodSetPushSubscriptionType = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setPushNotificationSubscriptionType", "(Lcom/appboy/enums/NotificationSubscriptionType;)Z", false);
 
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodSetPushSubscriptionType, *SubscriptionTypeValue);
 }
@@ -242,8 +242,8 @@ bool UBrazeUserAndroid::SetEmailSubscriptionType(EBrazeNotificationSubscriptionT
 	JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
 	const FScopedJavaObject<jobject> SubscriptionTypeValue = BrazeConversions::EBrazeNotificationSubscriptionTypeToJObject(SubscriptionType);
 
-	const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-	const jmethodID MethodSetPushSubscriptionType = FJavaWrapper::FindMethod(Env, ClassAppboyUser, "setEmailNotificationSubscriptionType", "(Lcom/appboy/enums/NotificationSubscriptionType;)Z", false);
+	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+	const jmethodID MethodSetPushSubscriptionType = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setEmailNotificationSubscriptionType", "(Lcom/appboy/enums/NotificationSubscriptionType;)Z", false);
 
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodSetPushSubscriptionType, *SubscriptionTypeValue);
 }
@@ -253,26 +253,26 @@ bool UBrazeUserAndroid::SetAttributionData(const FBrazeAttributionData& Attribut
 	JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
 	const FScopedJavaObject<jobject> AttributionDataValue = BrazeConversions::AttributionDataToJObject(AttributionData);
 
-	const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-	const jmethodID MethodSetAttributionData = FJavaWrapper::FindMethod(Env, ClassAppboyUser, "setAttributionData", "(Lcom/appboy/models/outgoing/AttributionData;)Z", false);
+	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+	const jmethodID MethodSetAttributionData = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setAttributionData", "(Lcom/appboy/models/outgoing/AttributionData;)Z", false);
 
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodSetAttributionData, *AttributionDataValue);
 }
 
-void UBrazeUserAndroid::Initialize(const jobject& AppboyInstance)
+void UBrazeUserAndroid::Initialize(const jobject& BrazeInstance)
 {
 	JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
-	const jclass ClassAppboy = FAndroidApplication::FindJavaClass("com/appboy/Appboy");
-	const jmethodID MethodGetUser = FJavaWrapper::FindMethod(Env, ClassAppboy, "getCurrentUser", "()Lcom/appboy/AppboyUser;", false);
-	UserJObject = FJavaWrapper::CallObjectMethod(Env, AppboyInstance, MethodGetUser);
+	const jclass ClassBraze = FAndroidApplication::FindJavaClass("com/braze/Braze");
+	const jmethodID MethodGetUser = FJavaWrapper::FindMethod(Env, ClassBraze, "getCurrentUser", "()Lcom/braze/BrazeUser;", false);
+	UserJObject = FJavaWrapper::CallObjectMethod(Env, BrazeInstance, MethodGetUser);
 }
 
 void UBrazeUserAndroid::SetLastKnownLocation(double Latitude, double Longitude, double Altitude, double Accuracy)
 {
 	JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
 	
-	const jclass ClassAppboyUser = FAndroidApplication::FindJavaClass("com/appboy/AppboyUser");
-	const jmethodID MethodSetLastKnownLocation = FJavaWrapper::FindMethod(Env, ClassAppboyUser, "setLastKnownLocation", "(DDLjava/lang/Double;Ljava/lang/Double;)V", false);
+	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
+	const jmethodID MethodSetLastKnownLocation = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setLastKnownLocation", "(DDLjava/lang/Double;Ljava/lang/Double;)V", false);
 
 	const jclass ClassDouble = Env->FindClass("java/lang/Double");
 	const jmethodID MethodDoubleInit = FJavaWrapper::FindMethod(Env, ClassDouble, "<init>", "(D)V", false);

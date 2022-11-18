@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return YES if the user notification was sent from Braze servers.
  */
-+ (BOOL)isAppboyUserNotification:(UNNotificationResponse *)response NS_AVAILABLE_IOS(10.0);
++ (BOOL)isAppboyUserNotification:(UNNotificationResponse *)response API_AVAILABLE(ios(10.0), macCatalyst(14.0));
 
 /*!
  * @param userInfo The userInfo dictionary passed to application:didReceiveRemoteNotification:fetch​Completion​Handler:
@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
  *             your app doesn't take any undesired or unnecessary actions upon receiving Braze's uninstall tracking notifications
  *             (e.g., pinging your server for content).
  */
-+ (BOOL)isUninstallTrackingUserNotification:(UNNotificationResponse *)response NS_AVAILABLE_IOS(10.0);
++ (BOOL)isUninstallTrackingUserNotification:(UNNotificationResponse *)response API_AVAILABLE(ios(10.0), macCatalyst(14.0));
 
 /*!
  * @param userInfo The userInfo dictionary passed to application:didReceiveRemoteNotification:fetchCompletionHandler:
@@ -69,7 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
  *             your app doesn't take any undesired or unnecessary actions upon receiving Braze's geofence sync notifications
  *             (e.g., pinging your server for content).
  */
-+ (BOOL)isGeofencesSyncUserNotification:(UNNotificationResponse *)response NS_AVAILABLE_IOS(10.0);
++ (BOOL)isGeofencesSyncUserNotification:(UNNotificationResponse *)response API_AVAILABLE(ios(10.0), macCatalyst(14.0));
 
 /*!
  * @param userInfo The userInfo dictionary passed to application:didReceiveRemoteNotification:fetchCompletionHandler:
@@ -82,6 +82,13 @@ NS_ASSUME_NONNULL_BEGIN
  *             (e.g., pinging your server for content).
  */
 + (BOOL)isGeofencesSyncRemoteNotification:(NSDictionary *)userInfo;
+
+/*!
+ * @param userInfo The userInfo dictionary passed to application:didReceiveRemoteNotification:fetch​Completion​Handler:
+ *
+ * @return YES if the push notification was sent by Braze and is silent.
+ */
++ (BOOL)isAppboySilentRemoteNotification:(NSDictionary *)userInfo;
 
 /*!
  * @param userInfo The userInfo dictionary passed to application:didReceiveRemoteNotification:fetchCompletionHandler:
@@ -101,9 +108,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (BOOL)shouldFetchTestTriggersFlagContainedInPayload:(NSDictionary *)userInfo __deprecated;
 
-+ (NSSet<UNNotificationCategory *> *)getAppboyUNNotificationCategorySet NS_AVAILABLE_IOS(10.0);
+/*!
+ * @return A set of the default UNNotificationCategories used by Braze.
+ */
++ (NSSet<UNNotificationCategory *> *)getAppboyUNNotificationCategorySet API_AVAILABLE(ios(10.0), macCatalyst(14.0));
 
-+ (NSSet<UIUserNotificationCategory *> *)getAppboyUIUserNotificationCategorySet __deprecated;
++ (NSSet<UIUserNotificationCategory *> *)getAppboyUIUserNotificationCategorySet __deprecated_msg("Please use `getAppboyUNNotificationCategorySet` instead.");
 
 @end
 NS_ASSUME_NONNULL_END

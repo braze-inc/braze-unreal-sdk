@@ -1,25 +1,10 @@
 #import <Foundation/Foundation.h>
+#import "Appboy.h"
 
 /*
  * Braze Public API: ABKURLDelegate
  */
 NS_ASSUME_NONNULL_BEGIN
-
-/*
- * The ABKChannel defines the messaging channel from which a URL was served.
- *  ABKPushNotificationChannel - The URL came from a clicked push notification.
- *  ABKInAppMessageChannel - The URL came from a click on the body or button of an in-app message. See ABKInAppMessage or ABKInAppMessageButton.
- *  ABKNewsFeedChannel - The URL came from a clicked News Feed card. See ABKCard.
- *  ABKContentCardChannel - The URL  came from a clicked Content Card
- *  ABKUnknownChannel - The URL came from an older API that didn't give a channel.
- */
-typedef NS_ENUM(NSInteger, ABKChannel) {
-  ABKPushNotificationChannel,
-  ABKInAppMessageChannel,
-  ABKNewsFeedChannel,
-  ABKContentCardChannel,
-  ABKUnknownChannel
-};
 
 @protocol ABKURLDelegate <NSObject>
 
@@ -34,7 +19,9 @@ typedef NS_ENUM(NSInteger, ABKChannel) {
  * This delegate method is fired whenever the user attempts to open a URL sent by Braze. You can use this delegate
  * to customize Braze's URL handling.
  */
-- (BOOL)handleAppboyURL:(NSURL *)url fromChannel:(ABKChannel)channel withExtras:(NSDictionary *)extras;
+- (BOOL)handleAppboyURL:(NSURL * _Nullable)url
+            fromChannel:(ABKChannel)channel
+             withExtras:(NSDictionary * _Nullable)extras;
 
 @end
 NS_ASSUME_NONNULL_END

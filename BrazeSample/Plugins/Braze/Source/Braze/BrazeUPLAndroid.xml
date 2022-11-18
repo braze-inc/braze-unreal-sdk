@@ -17,19 +17,29 @@
 	<gradleCopies>
 		<if condition="bFCMEnabled">
 			<true>
-				<copyFile src="$S(BuildDir)/google-services.json" dst="$S(BuildDir)/gradle/app/google-services.json" force="false"/>
+				<copyFile src="$S(PluginDir)/AndroidCopies/google-services.json" dst="$S(BuildDir)/gradle/app/google-services.json" force="false"/>
 			</true>
 		</if>
 	</gradleCopies>
+
+	<resourceCopies>
+		<copyDir src="$S(PluginDir)/AndroidCopies/res" dst="$S(BuildDir)/res" force="false"/>
+	</resourceCopies>
 
 	<!--  optional base build.gradle buildscript additions -->
 	<buildscriptGradleAdditions>
 		<if condition="bFCMEnabled">
 			<true>
 				<insert>
+	repositories {
+		google()
+		mavenCentral()
+	}
+
 	dependencies {
-		classpath 'com.google.gms:google-services:4.3.3' // google-services plugin
-	} 
+		classpath 'com.google.gms:google-services:4.3.4' // google-services plugin
+		classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0'
+	}
 				</insert>
 			</true>
 		</if>
@@ -39,13 +49,34 @@
 	<buildGradleAdditions>
 		<insert>
 	repositories {
+		google()
+		mavenCentral()
 		maven { url "https://appboy.github.io/appboy-android-sdk/sdk" }
 	}
 
 	dependencies {
-		implementation 'com.appboy:android-sdk-ui:8.0.+'
+		implementation 'com.appboy:android-sdk-ui:23.0.0'
+
+		<!-- Enforce minimal versions of these dependencies to overwrite UE4's requirements for older versions that result in build conflicts -->
+		implementation('com.google.android.gms:play-services-auth') { version { require '17.0.0' } }
+		implementation('com.google.android.gms:play-services-games') { version { require '17.0.0' } }
+		implementation('com.google.android.gms:play-services-nearby') { version { require '17.0.0' } }
+		implementation('com.google.android.gms:play-services-plus') { version { require '17.0.0' } }
 	}
-	
+
+	apply plugin: 'kotlin-android'
+
+	android {
+		compileOptions {
+			sourceCompatibility JavaVersion.VERSION_1_8
+			targetCompatibility JavaVersion.VERSION_1_8
+		}
+
+		kotlinOptions {
+			freeCompilerArgs = ['-Xjvm-default=all']
+			jvmTarget = "1.8"
+		}
+	}
 		</insert>
 		
 		<!-- Firebase Cloud Messaging dependencies -->
@@ -53,8 +84,7 @@
 			<true>
 				<insert>
 	dependencies {
-		implementation 'com.google.firebase:firebase-core:11.8.0'
-		implementation 'com.google.firebase:firebase-messaging:11.8.0'
+		implementation 'com.google.firebase:firebase-messaging:23.0.0'
 	}
 	
 	apply plugin: 'com.google.gms.google-services'
@@ -72,7 +102,7 @@
 			<true>
 				<addElements tag="application">
 					<service
-						android:name="com.appboy.AppboyFirebaseMessagingService"
+						android:name="com.braze.push.BrazeFirebaseMessagingService"
 						android:exported="false">
 						<intent-filter>
 							<action android:name="com.google.firebase.MESSAGING_EVENT" />

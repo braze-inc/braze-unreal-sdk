@@ -31,11 +31,9 @@ public class Braze : ModuleRules
 			PublicFrameworks.AddRange(new string[] { "AdSupport", "CoreTelephony" });
             
 			string FrameworkPath = Path.Combine(ModuleDirectory, "../ThirdParty/IOS/");
-			PublicAdditionalLibraries.Add(Path.Combine(FrameworkPath, "libBrazeIOS.a"));
             
-			// todo: Attempt a static framework, use the following:
-			// PublicAdditionalFrameworks.Add(new Framework("Appboy_IOS_SDK", Path.Combine(FrameworkPath, "Appboy_IOS_SDK.framework.zip")));
-			// RuntimeDependencies.Add(Path.Combine(FrameworkPath, "Appboy_IOS_SDK.framework.zip"));
+			PublicAdditionalFrameworks.Add(new Framework("Braze", Path.Combine(FrameworkPath, "Braze.framework.zip")));
+			RuntimeDependencies.Add(Path.Combine(FrameworkPath, "Braze.framework.zip"));
 		}
     }
 }

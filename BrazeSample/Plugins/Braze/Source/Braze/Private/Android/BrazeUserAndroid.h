@@ -19,7 +19,7 @@ class BRAZE_API UBrazeUserAndroid : public UBrazeUser
 #if PLATFORM_ANDROID 
 
 public:
-	void Initialize(const jobject& AppboyInstance);
+	void Initialize(const jobject& BrazeInstance);
 	virtual void BeginDestroy() final;
 
 	virtual bool AddAlias(const FString& Alias, const FString& Label) final;

@@ -28,6 +28,9 @@ IOSApiKey= ; your API key
 CustomEndpoint= ; your endpoint
 ```
 
+> **Warning**
+> For projects targeting Android SDK 31+ Unreal will generate builds that will fail during installation on Android 12+ devices with the INSTALL_PARSE_FAILED_MANIFEST_MALFORMED error. To fix this, locate the `UE4_Engine_AndroidSDK_31_Build_Fix.patch` git patch file in the root of this repository and apply it to your Unreal source build.
+
 ### Manually Initialize Braze
 
 If you'd like precise control over when Braze initializes, you may disable AutoInitialize in the DefaultEngine.ini. With AutoInitialize disabled, you'll need to manually initialize Braze from native C++ or Blueprint.
@@ -122,24 +125,26 @@ The Blueprint Library BrazePropertiesLibrary includes helper functions to make c
 #### Android
 
 In order to enable Push Notifications to Android via Firebase Coud Messaging (FCM), do the following:
-1. Add bEnableFirebaseCloudMessagingSupport=true to your engine.ini for your project.
+1. Add the following lines to your engine.ini for your project:
+    * bEnableFirebaseCloudMessagingSupport=true
+    * bIsFirebaseCloudMessagingRegistrationEnabled=true
 2. Setup your application with [FCM](https://firebase.google.com/docs/cloud-messaging/)
 3. Add FirebaseCloudMessagingSenderIdKey=<your sender id key> to your engine.ini for your project.
-    * Also See Step 4 of the [Braze Integration](https://www.braze.com/docs/developer_guide/platform_integration_guides/android/push_notifications/integration/#firebase-integration) document to setup your credentials on the dashboard.
-4. Add google-services.json to your Android build folder 
-    * To access your Android build folder, Open Project Settings -> Android, and there's an "Open Build Folder" button
+    * Also See Step 4 of the [Braze Integration](https://www.braze.com/docs/developer_guide/platform_integration_guides/android/push_notifications/android/integration/standard_integration) document to setup your credentials on the dashboard.
+4. Create `AndroidCopies` folder next to the [BrazeUPLAndroid.xml](./BrazeSample/Plugins/Braze/Source/Braze/BrazeUPLAndroid.xml). Add your `google-services.json` to the top of this folder.
 
-To set the [small and large notification icons](https://www.braze.com/docs/developer_guide/platform_integration_guides/android/push_notifications/integration/#step-3-configure-notification-icons):
-1. Open the Android Build folder (as described above)
-2. Add icons to the appropriate drawable folder
-3. Add appboy.xml to res/values in the build folder to set the icon. A very basic appboy.xml file:
+To set the [small and large notification icons](https://www.braze.com/docs/developer_guide/platform_integration_guides/android/push_notifications/android/integration/standard_integration#step-3-configure-notification-icons):
+1. Add icons to the appropriate drawable folder (`drawable` by default) inside of the `AndroidCopies/res` folder.
+2. Add `braze.xml` to the `AndroidCopies/res/values` folder to set the icons. A very basic braze.xml file:
 ```
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <drawable name="com_appboy_push_small_notification_icon">@drawable/notification_small_icon</drawable>
-    <drawable name="com_appboy_push_large_notification_icon">@drawable/notification_large_icon</drawable>
+    <drawable name="com_braze_push_small_notification_icon">@drawable/notification_small_icon</drawable>
+    <drawable name="com_braze_push_large_notification_icon">@drawable/notification_large_icon</drawable>
 </resources>
 ```
+> **Note**
+> The files from the `AndroidCopies` folder will be copied into the generated Android project structure as defined in the `BrazeUPLAndroid.xml`.
 
 #### iOS
 

@@ -7,8 +7,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ABKContentCard : NSObject <NSCopying, NSCoding>
 
 /*!
-* Card's ID.
-*/
+ * Card's ID.
+ */
 @property (readonly) NSString *idString;
 
 /*!
@@ -54,6 +54,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nullable) NSDictionary *extras;
 
 /*!
+ * This property is set to YES if the instance represents a test content card 
+ */
+@property (nonatomic, readonly) BOOL isTest;
+
+/*!
  * The URL string that will be opened after the card is clicked on.
  */
 @property (copy, nullable) NSString *urlString;
@@ -94,7 +99,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*!
  * Manually dismiss a card.
- * It can be done only if the card is dismissable.
+ * Sets the card's `dismissed` property to YES and logs the dismissal to Braze.
+ * Only has effect if the card is dismissible and if the `dismissed` property is currently set to NO.
  */
 - (void)logContentCardDismissed;
 
