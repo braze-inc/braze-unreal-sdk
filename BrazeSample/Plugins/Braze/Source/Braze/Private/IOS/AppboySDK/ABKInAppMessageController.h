@@ -25,6 +25,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic, nullable) id<ABKInAppMessageUIControlling> inAppMessageUIController;
 
 /*!
+ * This boolean determines if modal in-app messages will be dismissed when the user taps outside of the
+ * in-app message.
+ *
+ * @discussion The default of this value is NO but can be overriden by setting the value of ABKEnableDismissModalOnOutsideTapKey in
+ *             appboyOptions or in the Braze dictionary in your Info.plist file.
+ */
+@property BOOL enableDismissModalOnOutsideTap;
+
+/*!
  * @param delegate The in-app message delegate that implements the ABKInAppMessageControllerDelegate methods. If the delegate is
  * nil, it acts as one which always returns ABKDisplayInAppMessageNow and doesn't implement all other delegate methods.
  *
@@ -34,7 +43,15 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * If there are no in-app messages available this returns immediately having taken no action.
  */
-- (void)displayNextInAppMessageWithDelegate:(nullable id<ABKInAppMessageControllerDelegate>)delegate;
+- (void)displayNextInAppMessageWithDelegate:(nullable id<ABKInAppMessageControllerDelegate>)delegate __deprecated_msg("Please use 'displayNextInAppMessage' instead.");
+
+/*!
+ * Displays the next in-app message from the in-app message stack.
+ *
+ * This method pops the next in-app message from the in-app message stack and tries to displays it.
+ * When defined, the current delegate methods are executed to respect any custom behavior.
+ */
+- (void)displayNextInAppMessage;
 
 /*!
  * @return The number of in-app messages that are locally waiting to be displayed.
@@ -49,13 +66,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSInteger)inAppMessagesRemainingOnStack;
 
 /*!
- * @param newInAppMessage A new in-app message that will be added into the top of the stack of in-app messages that haven't been displayed yet.
+ * @discussion This method allows you to request display of an in-app message. It adds the in-app message object to the top of the in-app message stack
+ * and tries to display it immediately.
  *
- * @discussion This method allows you to display a custom in-app message. It adds the in-app message object to the top of the in-app message stack
- * and tries to display immediately.
+ * If you add an ABKInAppMessage instance that you received through a Braze delegate method - i.e. one that is associated with a campaign or Canvas,
+ * then impression and click analytics will work automatically. If you add an ABKInAppMessage instance that you instantiated yourself programmatically
+ * (uncommon), then analytics will not be available.
  *
- * Note: Clicks and impressions of in-app messages added by this method will not be collected by Braze and will not be
- * reflected on the dashboard.
+ * @param newInAppMessage the in-app message to add.
  */
 - (void)addInAppMessage:(ABKInAppMessage *)newInAppMessage;
 

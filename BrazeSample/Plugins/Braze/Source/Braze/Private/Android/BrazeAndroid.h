@@ -37,7 +37,7 @@ public:
 
 	virtual UBrazeUser* GetCurrentUser() const final;
 
-	FScopedJavaObject<jobject> GetAppboyInstance() const;
+	FScopedJavaObject<jobject> GetBrazeInstance() const;
 
 protected:
 	jobject ApplicationContext;

@@ -12,8 +12,10 @@
 #import <UIKit/UIKit.h>
 #import <UserNotifications/UserNotifications.h>
 
+#import "ABKSdkMetadata.h"
+
 #ifndef APPBOY_SDK_VERSION
-#define APPBOY_SDK_VERSION @"3.24.1"
+#define APPBOY_SDK_VERSION @"4.5.1"
 #endif
 
 #if !TARGET_OS_TV
@@ -29,6 +31,8 @@
 @protocol ABKInAppMessageControllerDelegate;
 @protocol ABKIDFADelegate;
 @protocol ABKURLDelegate;
+@protocol ABKImageDelegate;
+@protocol ABKSdkAuthenticationDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
 /* ------------------------------------------------------------------------------------------------------
@@ -89,9 +93,34 @@ extern NSString *const ABKEndpointKey;
 extern NSString *const ABKURLDelegateKey;
 
 /*!
+ * This can can be set to an instance of a class that conforms to the ABKImageDelegate protocol, allowing flexibility for using custom image libraries.
+ */
+extern NSString *const ABKImageDelegateKey;
+
+/*!
  * This key can be set to an instance of a class that conforms to the ABKInAppMessageControllerDelegate protocol, allowing it to handle in-app messages in a custom way.
  */
 extern NSString *const ABKInAppMessageControllerDelegateKey;
+
+/*!
+ * This key can be set YES or NO and will configure whether a modal in-app message will be dismissed when the user clicks
+ * outside of the in-app message.
+ * If set to YES, the in-app message will be dismissed.
+ * If set to NO, the in-app message will not be dismissed. This is the default value.
+ */
+extern NSString *const ABKEnableDismissModalOnOutsideTapKey;
+
+/*!
+ * This key can be set YES or NO and will configure whether the SDK Authentication feature is enabled.
+ */
+extern NSString *const ABKEnableSDKAuthenticationKey;
+
+/*!
+ * This key can can be set to an instance of a class that conforms to the ABKSdkAuthenticationDelegate protocol, allowing it to handle
+ * SDK Authentication errors. Setting this delegate will cause the delegate method `handleSdkAuthenticationError:` to get called in
+ * the event of an SDK Authentication error.
+ */
+extern NSString *const ABKSdkAuthenticationDelegateKey;
 
 /*!
  * Set the time interval for session time out (in seconds). This will affect the case when user has a session shorter than
@@ -112,13 +141,20 @@ extern NSString *const ABKMinimumTriggerTimeIntervalKey;
 extern NSString *const ABKSDKFlavorKey;
 
 /*!
- * Key to specify a whitelist for device fields that are collected by the Braze SDK.
+ * Key to specify an allowlist for device fields that are collected by the Braze SDK.
  *
- * To specify whitelisted device fields, assign the bitwise `OR` of desired fields to this key. Fields are defined
+ * To specify allowlisted device fields, assign the bitwise `OR` of desired fields to this key. Fields are defined
  * in `ABKDeviceOptions`. To turn off all fields, set the value of this key to `ABKDeviceOptionNone`. By default,
  * all fields are collected.
  */
-extern NSString *const ABKDeviceWhitelistKey;
+extern NSString *const ABKDeviceAllowlistKey;
+
+/*!
+ * This key is deprecated in favor of ABKDeviceAllowlistKey. See ABKDeviceAllowlistKey for more details.
+ */
+extern NSString *const ABKDeviceWhitelistKey __deprecated_msg("ABKDeviceWhitelistKey is deprecated. Please use ABKDeviceAllowlistKey instead.");
+
+extern NSString *const ABKEphemeralEventsKey;
 
 /*!
  * This key can be set to a string value representing the app group name for the Push Story Notification
@@ -126,6 +162,15 @@ extern NSString *const ABKDeviceWhitelistKey;
  * with the Push Story app extension.
  */
 extern NSString *const ABKPushStoryAppGroupKey;
+
+/*!
+ * This key can be set to an integer value to specify the level of the log statements output by the Braze SDK.
+ *
+ * The default log level is 8 and will minimally log info. To enable verbose logging for debugging, use log level 0.
+ *
+ * This selection will override any LogLevel value set in the Info.plist.
+ */
+extern NSString *const ABKLogLevelKey;
 
 /* ------------------------------------------------------------------------------------------------------
  * Enums
@@ -141,7 +186,7 @@ extern NSString *const ABKPushStoryAppGroupKey;
  *   ABKAutomaticRequestProcessingExceptForDataFlush - Deprecated. Use ABKManualRequestProcessing.
  *   ABKManualRequestProcessing - The same as ABKAutomaticRequestProcessing, except that updates to
  *        custom attributes and triggering of custom events will not automatically flush to the server. Instead, you
- *        must call flushDataAndProcessRequestQueue when you want to synchronize newly updated user data with Braze. Note that
+ *        must call requestImmediateDataFlush when you want to synchronize newly updated user data with Braze. Note that
  *        the configuration does not turn off all networking, i.e. requests important to the proper functionality of the Braze
  *        SDK will still occur.
  *
@@ -175,8 +220,8 @@ typedef NS_OPTIONS(NSUInteger, ABKDeviceOptions) {
   ABKDeviceOptionLocale = (1 << 2),
   ABKDeviceOptionModel = (1 << 3),
   ABKDeviceOptionOSVersion = (1 << 4),
-  // Note: The ABKDeviceOptionIDFV whitelist key currently has no effect.
-  // IDFV is read regardless of whitelist settings due to its
+  // Note: The ABKDeviceOptionIDFV allowlist key currently has no effect.
+  // IDFV is read regardless of allowlist settings due to its
   // role as the primary device identifier within the Braze system.
   ABKDeviceOptionIDFV = (1 << 5),
   ABKDeviceOptionIDFA = (1 << 6),
@@ -186,6 +231,17 @@ typedef NS_OPTIONS(NSUInteger, ABKDeviceOptions) {
   ABKDeviceOptionAdTrackingEnabled = (1 << 10),
   ABKDeviceOptionPushDisplayOptions = (1 << 11),
   ABKDeviceOptionAll = ~ABKDeviceOptionNone
+};
+
+/*!
+ * Possible channels supported by the SDK.
+ */
+typedef NS_ENUM(NSInteger, ABKChannel) {
+  ABKPushNotificationChannel,
+  ABKInAppMessageChannel,
+  ABKNewsFeedChannel,
+  ABKContentCardChannel,
+  ABKUnknownChannel __deprecated_enum_msg("ABKUnknownChannel will be removed in a future update.")
 };
 
 /*
@@ -225,8 +281,7 @@ typedef NS_OPTIONS(NSUInteger, ABKDeviceOptions) {
  * @param apiKey The app's API key
  * @param application The current app
  * @param launchOptions The options NSDictionary that you get from application:didFinishLaunchingWithOptions
- * @param appboyOptions An optional NSDictionary with startup configuration values for Braze. This currently supports
- * ABKRequestProcessingPolicyOptionKey, ABKSocialAccountAcquisitionPolicyOptionKey and ABKFlushIntervalOptionKey. See below
+ * @param appboyOptions An optional NSDictionary with startup configuration values for Braze. See below
  * for more information.
  *
  * @discussion Starts up Braze and tells it that your app is done launching. You should call this
@@ -263,7 +318,7 @@ typedef NS_OPTIONS(NSUInteger, ABKDeviceOptions) {
 *
 * Setting the request policy does not automatically cause a flush to occur, it just allows for a flush to be scheduled
 * the next time an eligible request is enqueued. To force an immediate flush after changing the request processing
-* policy, invoke <pre>[[Appboy sharedInstance] flushDataAndProcessRequestQueue]</pre>.
+* policy, invoke <pre>[[Appboy sharedInstance] requestImmediateDataFlush]</pre>.
 */
 @property ABKRequestProcessingPolicy requestProcessingPolicy;
 
@@ -271,6 +326,11 @@ typedef NS_OPTIONS(NSUInteger, ABKDeviceOptions) {
  * A class extending ABKIDFADelegate can be set to provide the IDFA to Braze.
  */
 @property (nonatomic, strong, nullable) id<ABKIDFADelegate> idfaDelegate;
+
+/*!
+ * A class conforming to ABKSdkAuthenticationDelegate can be set to handle SDK Authentication errors.
+ */
+@property (nonatomic, strong, nullable) id<ABKSdkAuthenticationDelegate> sdkAuthenticationDelegate;
 
 #if !TARGET_OS_TV
 /*!
@@ -291,6 +351,11 @@ typedef NS_OPTIONS(NSUInteger, ABKDeviceOptions) {
 @property (nonatomic, weak, nullable) id<ABKURLDelegate> appboyUrlDelegate;
 
 /*!
+ * A class conforming to ABKImageDelegate can be set to use a custom image library.
+ */
+@property (nonatomic, strong, nullable) id<ABKImageDelegate> imageDelegate;
+
+/*!
  * Property for internal reporting of SDK flavor.
  */
 @property (nonatomic) ABKSDKFlavor sdkFlavor;
@@ -309,7 +374,9 @@ typedef NS_OPTIONS(NSUInteger, ABKDeviceOptions) {
  * If you're using ABKManualRequestProcessing, you only need to call this when you want to force
  * an immediate flush of updated user data.
  */
-- (void)flushDataAndProcessRequestQueue;
+- (void)requestImmediateDataFlush;
+
+- (void)flushDataAndProcessRequestQueue __deprecated_msg("Please use `requestImmediateDataFlush` instead.");
 
 /*!
  * Stops all in flight server communication and enables manual request processing control to ensure that no automatic
@@ -323,7 +390,8 @@ typedef NS_OPTIONS(NSUInteger, ABKDeviceOptions) {
 * @param userId The new user's ID (from the host application).
 *
 * @discussion
-* This method changes the user's ID.
+* This method changes the user's ID. These user IDs should be private and not easily obtained (e.g. not a plain
+* email address or username).
 *
 * When you first start using Braze on a device, the user is considered "anonymous". You can use this method to
 * optionally identify a user with a unique ID, which enables the following:
@@ -359,6 +427,28 @@ typedef NS_OPTIONS(NSUInteger, ABKDeviceOptions) {
 - (void)changeUser:(NSString *)userId;
 
 /*!
+ * @param userId The new user's ID (from the host application)
+ * @param signature The SDK Authentication signature for the user being identified.
+ *
+ * @discussion See documantation for `changeUser:` above 
+ */
+- (void)changeUser:(NSString *)userId sdkAuthSignature:(nullable NSString *)signature;
+
+/*!
+ * @param signature The SDK Authentication signature for the current user
+ *
+ * @discussion Sets the signature used for SDK authentication for the current user.
+ */
+- (void)setSdkAuthenticationSignature:(NSString *)signature;
+
+/*!
+ * @discussion Unsubscribe from SDK Authentication errors. After this method is called,
+ * the ABKSdkAuthenticationDelegate method `handleSdkAuthenticationError:` will not be called in the event of
+ * an SDK Authentication error.
+ */
+- (void)unsubscribeFromSdkAuthenticationErrors;
+
+/*!
  * @param eventName The name of the event to log.
  *
  * @discussion Adds an app specific event to event tracking log that's lazily pushed up to the server. Think of
@@ -375,8 +465,8 @@ typedef NS_OPTIONS(NSUInteger, ABKDeviceOptions) {
 /*!
  * @param eventName The name of the event to log.
  * @param properties An <code>NSDictionary</code> of properties to associate with this purchase. Property keys are non-empty <code>NSString</code> objects with
- * <= 255 characters and no leading dollar signs.  Property values can be <code>NSNumber</code> booleans, integers, floats < 62 bits, <code>NSDate</code> objects or
- * <code>NSString</code> objects with <= 255 characters.
+ * <= 255 characters and no leading dollar signs.  Property values can be <code>NSNumber</code> booleans, integers, floats < 62 bits, <code>NSDate</code> objects,
+ * <code>NSString</code> objects with <= 255 characters, or any JSON Encodable object including NSArray and NSDictionary of the previous data types (nested properties). Total length of encoded properties must be under 50 KB.
  *
  * @discussion Adds an app specific event to event tracking log that's lazily pushed up to the server. Think of
  *   events like counters. That is, each time you log an event, we'll update a counter for that user. Events should be
@@ -415,14 +505,14 @@ typedef NS_OPTIONS(NSUInteger, ABKDeviceOptions) {
  * who have access to the NSLocale object for the purchase in question (which can be obtained from SKProduct listings
  * provided by StoreKit) can obtain the currency code by invoking:
  * <pre>[locale objectForKey:NSLocaleCurrencyCode]</pre>
- * Supported currency symbols include: AED, AFN, ALL, AMD, ANG, AOA, ARS, AUD, AWG, AZN, BAM, BBD, BDT, BGN, BHD, BIF, 
- * BMD, BND, BOB, BRL, BSD, BTC, BTN, BWP, BYR, BZD, CAD, CDF, CHF, CLF, CLP, CNY, COP, CRC, CUC, CUP, CVE, CZK, DJF, 
- * DKK, DOP, DZD, EEK, EGP, ERN, ETB, EUR, FJD, FKP, GBP, GEL, GGP, GHS, GIP, GMD, GNF, GTQ, GYD, HKD, HNL, HRK, HTG, HUF, 
- * IDR, ILS, IMP, INR, IQD, IRR, ISK, JEP, JMD, JOD, JPY, KES, KGS, KHR, KMF, KPW, KRW, KWD, KYD, KZT, LAK, LBP, LKR, LRD, 
- * LSL, LTL, LVL, LYD, MAD, MDL, MGA, MKD, MMK, MNT, MOP, MRO, MTL, MUR, MVR, MWK, MXN, MYR, MZN, NAD, NGN, NIO, NOK, NPR, 
- * NZD, OMR, PAB, PEN, PGK, PHP, PKR, PLN, PYG, QAR, RON, RSD, RUB, RWF, SAR, SBD, SCR, SDG, SEK, SGD, SHP, SLL, SOS, SRD, 
- * STD, SVC, SYP, SZL, THB, TJS, TMT, TND, TOP, TRY, TTD, TWD, TZS, UAH, UGX, USD, UYU, UZS, VEF, VND, VUV, WST, XAF, XAG, 
- * XAU, XCD, XDR, XOF, XPD, XPF, XPT, YER, ZAR, ZMK, ZMW and ZWL. Any other provided currency symbol will result in a logged 
+ * Supported currency symbols include: AED, AFN, ALL, AMD, ANG, AOA, ARS, AUD, AWG, AZN, BAM, BBD, BDT, BGN, BHD, BIF,
+ * BMD, BND, BOB, BRL, BSD, BTC, BTN, BWP, BYR, BZD, CAD, CDF, CHF, CLF, CLP, CNY, COP, CRC, CUC, CUP, CVE, CZK, DJF,
+ * DKK, DOP, DZD, EEK, EGP, ERN, ETB, EUR, FJD, FKP, GBP, GEL, GGP, GHS, GIP, GMD, GNF, GTQ, GYD, HKD, HNL, HRK, HTG, HUF,
+ * IDR, ILS, IMP, INR, IQD, IRR, ISK, JEP, JMD, JOD, JPY, KES, KGS, KHR, KMF, KPW, KRW, KWD, KYD, KZT, LAK, LBP, LKR, LRD,
+ * LSL, LTL, LVL, LYD, MAD, MDL, MGA, MKD, MMK, MNT, MOP, MRO, MTL, MUR, MVR, MWK, MXN, MYR, MZN, NAD, NGN, NIO, NOK, NPR,
+ * NZD, OMR, PAB, PEN, PGK, PHP, PKR, PLN, PYG, QAR, RON, RSD, RUB, RWF, SAR, SBD, SCR, SDG, SEK, SGD, SHP, SLL, SOS, SRD,
+ * STD, SVC, SYP, SZL, THB, TJS, TMT, TND, TOP, TRY, TTD, TWD, TZS, UAH, UGX, USD, UYU, UZS, VEF, VND, VUV, WST, XAF, XAG,
+ * XAU, XCD, XDR, XOF, XPD, XPF, XPT, YER, ZAR, ZMK, ZMW and ZWL. Any other provided currency symbol will result in a logged
  * warning and no other action taken by the SDK.
  * @param price Prices should be reported as NSDecimalNumber objects. Base units are treated the same as with SKProduct
  * from StoreKit and depend on the currency. As an example, USD should be reported as Dollars.Cents, whereas JPY should
@@ -483,21 +573,6 @@ typedef NS_OPTIONS(NSUInteger, ABKDeviceOptions) {
 
 
 #if !TARGET_OS_TV
-/*!
- * @param response The response passed in from userNotificationCenter:didReceiveNotificationResponse:withCompletionHandler:.
- *
- * @discussion This method returns whether or not a UNNotification was sent from Braze servers.
- */
-- (BOOL)userNotificationWasSentFromAppboy:(UNNotificationResponse *)response __deprecated_msg("Use [ABKPushUtils isAppboyUserNotification:] instead.") NS_AVAILABLE_IOS(10.0);
-
-/*!
- * @param options The NSDictionary you get from application:didFinishLaunchingWithOptions or
- * application:didReceiveRemoteNotification in your App Delegate.
- *
- * @discussion
- * Test a push notification to see if it came Braze.
- */
-- (BOOL)pushNotificationWasSentFromAppboy:(NSDictionary *)options __deprecated_msg("Use [ABKPushUtils isAppboyRemoteNotification:] instead.");
 
 /*!
  * @param deviceToken The device's push token.
@@ -555,18 +630,27 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
          withCompletionHandler:(nullable void (^)(void))completionHandler NS_AVAILABLE_IOS(10_0);
 
 /*!
- * @param pushAuthGranted The boolean value passed in from completionHandler in UNUserNotificationCenter's 
+ * @param pushAuthGranted The boolean value passed in from completionHandler in UNUserNotificationCenter's
  * requestAuthorizationWithOptions:completionHandler: method, which indicates if the push authorization
  * was granted or not.
  *
  * @discussion This method forwards the push authorization result to Braze after the user interacts with
  * the notification prompt.
- * Call it from the UNUserNotificationCenter's requestAuthorizationWithOptions:completionHandler: method 
+ * Call it from the UNUserNotificationCenter's requestAuthorizationWithOptions:completionHandler: method
  * when you prompt users to enable push.
  */
 - (void)pushAuthorizationFromUserNotificationCenter:(BOOL)pushAuthGranted;
 
 #endif
+
+/*!
+ * Adds SDK Metadata values to those automatically collected by the SDK.
+ *
+ * Metadata tell Braze how the SDK is integrated (e.g. wrapper, package manager, etc.)
+ *
+ * @param metadata The metadata values reflecting the current SDK integration.
+ */
+- (void)addSdkMetadata:(NSArray<ABKSdkMetadata> *)metadata;
 
 /* ------------------------------------------------------------------------------------------------------
  * Data processing configuration methods.
@@ -575,10 +659,13 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 /*!
  * @discussion This method immediately wipes all data from the Braze iOS SDK. After this method is
  * called, the sharedInstance singleton will be nulled out and Braze functionality will be disabled
- * until the next call to startWithApiKey:. All references to the previous singleton should be
- * released.
+ * until the next call to startWithApiKey: in a subsequent app run. All references to the previous
+ * singleton should be released.
  *
- * The SDK will automatically re-enable itself when startWithApiKey: is next called. There is
+ * Note that the next call to startWithApiKey: must take place in a subsequent app run. Initializing the SDK
+ * within the same app run after calling this method is not supported.
+ *
+ * The SDK will automatically re-enable itself when startWithApiKey: is called. There is
  * no need to call requestEnableSDKOnNextAppRun: to re-enable the SDK. wipeDataAndDisableForAppRun:
  * may be used at any time, including while the SDK is otherwise disabled.
  *
@@ -591,8 +678,11 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
 /*!
  * @discussion This method immediately disables the Braze iOS SDK. After this method is called, the
  * sharedInstance singleton will be nulled out and Braze functionality will be disabled until the
- * SDK is re-enabled via requestEnableSDKOnNextAppRun: and a subsequent call to startWithApiKey:.
- * All references to the previous singleton should be released.
+ * SDK is re-enabled via a call to requestEnableSDKOnNextAppRun: and re-initialized in a subsequent
+ * app run via a call to startWithApiKey:. All references to the previous singleton should be released.
+ *
+ * Note that the next call to startWithApiKey: must take place in a subsequent app run. Initializing the SDK
+ * within the same app run after calling this method is not supported.
  *
  * Unlike with wipeDataAndDisableForAppRun:, calling requestEnableSDKOnNextAppRun: is required to
  * re-enable the SDK after the method is called.

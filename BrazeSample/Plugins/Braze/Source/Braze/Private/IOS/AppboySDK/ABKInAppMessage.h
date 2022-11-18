@@ -58,10 +58,10 @@ typedef NS_ENUM(NSInteger, ABKInAppMessageOrientation) {
  * Default icon and in-app message button background colors.
  * These are used in the in-app message view controllers.
  */
-static CGFloat const RedValueOfDefaultIconColorAndButtonBgColor = 0.0f;
-static CGFloat const GreenValueOfDefaultIconColorAndButtonBgColor = 115.0f / 255.0f;
-static CGFloat const BlueValueOfDefaultIconColorAndButtonBgColor = 213.0f / 255.0f;
-static CGFloat const AlphaValueOfDefaultIconColorAndButtonBgColor = 1.0f;
+static CGFloat const RedValueOfDefaultIconColorAndButtonBgColor = (CGFloat)0.0f;
+static CGFloat const GreenValueOfDefaultIconColorAndButtonBgColor = (CGFloat)(115.0f / 255.0f);
+static CGFloat const BlueValueOfDefaultIconColorAndButtonBgColor = (CGFloat)(213.0f / 255.0f);
+static CGFloat const AlphaValueOfDefaultIconColorAndButtonBgColor = (CGFloat)1.0f;
 
 /*
  * Braze Public API: ABKInAppMessage
@@ -158,6 +158,16 @@ NS_ASSUME_NONNULL_BEGIN
  * that may be present.
  */
 @property (nonatomic, strong, nullable) ABKInAppMessageDarkTheme *darkTheme;
+
+/*!
+ * An optional UIUserInterfaceStyle that can be used to force dark or light mode.
+ *
+ * @discussion The default value will not override OS settings but can
+ *             be overriden in `beforeInAppMessageDisplayed:`
+ *             to ensure that the dark or light theme is used for any given in-app message.
+ *             This property is of type NSInteger to avoid any iOS version dependencies.
+ */
+@property (nonatomic) NSInteger overrideUserInterfaceStyle;
 
 /*!
  * imageURI defines the URI of the image icon on in-app message.

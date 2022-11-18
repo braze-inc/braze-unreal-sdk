@@ -25,6 +25,7 @@ namespace BrazeConversions
 	NSDecimalNumber* FStringToNSDecimalNumber(const FString& String);
 	NSDictionary* FBrazePropertiesToNSDictionary(const FBrazeProperties& Properties);
 #elif PLATFORM_ANDROID
+	FScopedJavaObject<jobject> GetEnumFieldJavaObject(const FString EnumClassName, const FString FieldName);
 	FScopedJavaObject<jobject> EBrazeGenderToJObject(EBrazeGender Gender);
 	FScopedJavaObject<jobject> EBrazeMonthToJObject(EBrazeMonth Month);
 	FScopedJavaObject<jobject> EBrazeNotificationSubscriptionTypeToJObject(EBrazeNotificationSubscriptionType NotificationSubscriptionType);
@@ -32,7 +33,7 @@ namespace BrazeConversions
 	FScopedJavaObject<jobjectArray> StringArrayToJObjectArray(const TArray<FString>& Strings);
 	FScopedJavaObject<jobject> ToJavaBigDecimal(const FString& DecimalString);
 	FScopedJavaObject<jobject> ToJavaDate(const FDateTime& DateTime);
-	FScopedJavaObject<jobject> ToJavaAppboyProperties(const FBrazeProperties& Properties);
+	FScopedJavaObject<jobject> ToJavaBrazeProperties(const FBrazeProperties& Properties);
 
 #endif
 }

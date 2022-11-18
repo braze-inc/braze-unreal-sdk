@@ -42,6 +42,8 @@ bool UBrazeIOS::Init(const UBrazeConfig& Config)
 		          inApplication: Application
 		      withLaunchOptions: AppDelegate.launchOptions
 		      withAppboyOptions: AppboyOptions];
+
+        [[Appboy sharedInstance] addSdkMetadata:@[ABKSdkMetadataUnreal]];
 	});
 
 	// Enable Push Notifications

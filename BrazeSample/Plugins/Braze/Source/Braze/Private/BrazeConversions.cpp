@@ -90,6 +90,17 @@ namespace BrazeConversions
 	}
 
 #elif PLATFORM_ANDROID
+    FScopedJavaObject<jobject> GetEnumFieldJavaObject(const FString EnumClassName, const FString FieldName)
+    {
+        JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
+
+        const jclass EnumClass = FAndroidApplication::FindJavaClass(TCHAR_TO_ANSI(*EnumClassName));
+        FString EnumClassSignature("L");
+        EnumClassSignature += EnumClassName + ";";
+        const jfieldID EnumField = Env->GetStaticFieldID(EnumClass, TCHAR_TO_ANSI(*FieldName), TCHAR_TO_ANSI(*EnumClassSignature));
+        return FScopedJavaObject<jobject>(Env, Env->GetStaticObjectField(EnumClass, EnumField));
+    }
+
 	FScopedJavaObject<jobject> EBrazeGenderToJObject(EBrazeGender Gender)
 	{
 		const ANSICHAR* FieldName = nullptr;
@@ -203,20 +214,15 @@ namespace BrazeConversions
 		return FScopedJavaObject<jobject>(Env, DateInstance);
 	}	
 
-	FScopedJavaObject<jobject> ToJavaAppboyProperties(const FBrazeProperties& Properties)
+	FScopedJavaObject<jobject> ToJavaBrazeProperties(const FBrazeProperties& Properties)
 	{
 		JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
 
-		const jclass ClassAppboyProperties = FAndroidApplication::FindJavaClass("com/appboy/models/outgoing/AppboyProperties");
-		const jmethodID MethodInitAppboyProperties = FJavaWrapper::FindMethod(Env, ClassAppboyProperties, "<init>", "()V", false);
-		const jobject AppboyPropertiesInstance = Env->NewObject(ClassAppboyProperties, MethodInitAppboyProperties, FJavaWrapper::GameActivityThis);
+		const jclass ClassBrazeProperties = FAndroidApplication::FindJavaClass("com/braze/models/outgoing/BrazeProperties");
+		const jmethodID MethodInitBrazeProperties = FJavaWrapper::FindMethod(Env, ClassBrazeProperties, "<init>", "()V", false);
+		const jobject BrazePropertiesInstance = Env->NewObject(ClassBrazeProperties, MethodInitBrazeProperties, FJavaWrapper::GameActivityThis);
 
-		const jmethodID MethodAddBoolean = FJavaWrapper::FindMethod(Env, ClassAppboyProperties, "addProperty", "(Ljava/lang/String;Z)Lcom/appboy/models/outgoing/AppboyProperties;", false);
-		const jmethodID MethodAddDate    = FJavaWrapper::FindMethod(Env, ClassAppboyProperties, "addProperty", "(Ljava/lang/String;Ljava/util/Date;)Lcom/appboy/models/outgoing/AppboyProperties;", false);
-		const jmethodID MethodAddDouble  = FJavaWrapper::FindMethod(Env, ClassAppboyProperties, "addProperty", "(Ljava/lang/String;D)Lcom/appboy/models/outgoing/AppboyProperties;", false);
-		const jmethodID MethodAddInt     = FJavaWrapper::FindMethod(Env, ClassAppboyProperties, "addProperty", "(Ljava/lang/String;I)Lcom/appboy/models/outgoing/AppboyProperties;", false);
-		//const jmethodID MethodAddLong    = FJavaWrapper::FindMethod(Env, ClassAppboyProperties, "addProperty", "(Ljava/lang/String;J)Lcom/appboy/models/outgoing/AppboyProperties;", false);
-		const jmethodID MethodAddString  = FJavaWrapper::FindMethod(Env, ClassAppboyProperties, "addProperty", "(Ljava/lang/String;Ljava/lang/String;)Lcom/appboy/models/outgoing/AppboyProperties;", false);
+		const jmethodID MethodAddProperty = FJavaWrapper::FindMethod(Env, ClassBrazeProperties, "addProperty", "(Ljava/lang/String;Ljava/lang/Object;)Lcom/braze/models/outgoing/BrazeProperties;", false);
 
 		for (const auto& Elem : Properties.Properties)
 		{
@@ -227,33 +233,42 @@ namespace BrazeConversions
 			{
 				case EBrazeAnyType::Int:
 				{
-					const FScopedJavaObject<jobject> RetVal(Env, FJavaWrapper::CallObjectMethod(Env, AppboyPropertiesInstance, MethodAddInt, *KeyString, Any.IntValue));
+                    const jclass ClassInt = Env->FindClass("java/lang/Integer");
+                    const jmethodID MethodInitInt = FJavaWrapper::FindMethod(Env, ClassInt, "<init>", "(I)V", false);
+                    const jobject IntInstance = Env->NewObject(ClassInt, MethodInitInt, Any.IntValue);
+					const FScopedJavaObject<jobject> RetVal(Env, FJavaWrapper::CallObjectMethod(Env, BrazePropertiesInstance, MethodAddProperty, *KeyString, IntInstance));
 				}
 				break;
 				case EBrazeAnyType::Float:
 				{
-					const FScopedJavaObject<jobject> RetVal(Env, FJavaWrapper::CallObjectMethod(Env, AppboyPropertiesInstance, MethodAddDouble, *KeyString, Any.FloatValue));
+                    const jclass ClassFloat = Env->FindClass("java/lang/Float");
+                    const jmethodID ClassInitFloat = FJavaWrapper::FindMethod(Env, ClassFloat, "<init>", "(F)V", false);
+                    const jobject FloatInstance = Env->NewObject(ClassFloat, ClassInitFloat, Any.FloatValue);
+                    const FScopedJavaObject<jobject> RetVal(Env, FJavaWrapper::CallObjectMethod(Env, BrazePropertiesInstance, MethodAddProperty, *KeyString, FloatInstance));
 				}
 				break;
 				case EBrazeAnyType::Boolean:
 				{
-					const FScopedJavaObject<jobject> RetVal(Env, FJavaWrapper::CallObjectMethod(Env, AppboyPropertiesInstance, MethodAddBoolean, *KeyString, Any.BooleanValue));
+                    const jclass ClassBoolean = Env->FindClass("java/lang/Boolean");
+                    const jmethodID ClassInitBoolean = FJavaWrapper::FindMethod(Env, ClassBoolean, "<init>", "(Z)V", false);
+                    const jobject BooleanInstance = Env->NewObject(ClassBoolean, ClassInitBoolean, Any.BooleanValue);
+					const FScopedJavaObject<jobject> RetVal(Env, FJavaWrapper::CallObjectMethod(Env, BrazePropertiesInstance, MethodAddProperty, *KeyString, BooleanInstance));
 				}
 				break;
 				case EBrazeAnyType::String:
 				{
-					const FScopedJavaObject<jobject> RetVal(Env, FJavaWrapper::CallObjectMethod(Env, AppboyPropertiesInstance, MethodAddString, *KeyString, *FJavaHelper::ToJavaString(Env, Any.StringValue)));
+					const FScopedJavaObject<jobject> RetVal(Env, FJavaWrapper::CallObjectMethod(Env, BrazePropertiesInstance, MethodAddProperty, *KeyString, *FJavaHelper::ToJavaString(Env, Any.StringValue)));
 				} 
 				break;
 				case EBrazeAnyType::Date:
 				{
-					const FScopedJavaObject<jobject> RetVal(Env, FJavaWrapper::CallObjectMethod(Env, AppboyPropertiesInstance, MethodAddDate, *KeyString, *BrazeConversions::ToJavaDate(Any.DateValue)));
+					const FScopedJavaObject<jobject> RetVal(Env, FJavaWrapper::CallObjectMethod(Env, BrazePropertiesInstance, MethodAddProperty, *KeyString, *BrazeConversions::ToJavaDate(Any.DateValue)));
 				} 
 				break;
 			}
 		}
 
-		return FScopedJavaObject<jobject>(Env, AppboyPropertiesInstance);
+		return FScopedJavaObject<jobject>(Env, BrazePropertiesInstance);
 	}
 
 #endif 

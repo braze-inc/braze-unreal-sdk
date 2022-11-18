@@ -17,6 +17,10 @@
 #import "ABKCaptionedImageContentCard.h"
 #import "ABKClassicContentCard.h"
 
+// SDK Authentication
+#import "ABKSdkAuthenticationError.h"
+#import "ABKSdkAuthenticationDelegate.h"
+
 #if !TARGET_OS_TV
 // In-app Message
 #import "ABKInAppMessage.h"
@@ -43,11 +47,13 @@
 #import "ABKContentCardsController.h"
 
 // IDFA
-#import "ABKIdentifierForAdvertisingProvider.h"
 #import "ABKIDFADelegate.h"
 
 // SDWebImage
 #import "ABKSDWebImageProxy.h"
+
+// ABKImageDelegate
+#import "ABKImageDelegate.h"
 
 // Location
 #import "ABKLocationManager.h"
@@ -55,4 +61,7 @@
 
 #import "ABKURLDelegate.h"
 #import "ABKPushUtils.h"
+#import "ABKModalWebViewController.h"
+#import "ABKNoConnectionLocalization.h"
+
 #endif

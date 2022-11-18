@@ -1,0 +1,24 @@
+diff --git a/Engine/Source/Programs/UnrealBuildTool/Platform/Android/UEDeployAndroid.cs b/Engine/Source/Programs/UnrealBuildTool/Platform/Android/UEDeployAndroid.cs
+index 40b448ba379..87b27c94dea 100644
+--- a/Engine/Source/Programs/UnrealBuildTool/Platform/Android/UEDeployAndroid.cs
++++ b/Engine/Source/Programs/UnrealBuildTool/Platform/Android/UEDeployAndroid.cs
+@@ -2603,7 +2603,8 @@ namespace UnrealBuildTool
+ 				Text.AppendLine("\t\t          android:theme=\"@style/UE4SplashTheme\"");
+ 				Text.AppendLine("\t\t          android:launchMode=\"singleTask\"");
+ 				Text.AppendLine(string.Format("\t\t          android:screenOrientation=\"{0}\"", Orientation));
+-				Text.AppendLine(string.Format("\t\t          android:debuggable=\"{0}\">", bIsForDistribution ? "false" : "true"));
++				Text.AppendLine(string.Format("\t\t          android:debuggable=\"{0}\"", bIsForDistribution ? "false" : "true"));
++				Text.AppendLine("\t\t          android:exported=\"true\">");
+ 				Text.AppendLine("\t\t\t<intent-filter>");
+ 				Text.AppendLine("\t\t\t\t<action android:name=\"android.intent.action.MAIN\" />");
+ 				Text.AppendLine(string.Format("\t\t\t\t<category android:name=\"android.intent.category.LAUNCHER\" />"));
+@@ -2637,7 +2638,8 @@ namespace UnrealBuildTool
+ 					Text.AppendLine("\t\t          " + Line);
+ 				}
+ 			}
+-			Text.AppendLine(string.Format("\t\t          android:debuggable=\"{0}\">", bIsForDistribution ? "false" : "true"));
++			Text.AppendLine(string.Format("\t\t          android:debuggable=\"{0}\"", bIsForDistribution ? "false" : "true"));
++			Text.AppendLine("\t\t          android:exported=\"true\">");
+ 			Text.AppendLine("\t\t\t<meta-data android:name=\"android.app.lib_name\" android:value=\"UE4\"/>");
+ 			if (!bShowLaunchImage)
+ 			{

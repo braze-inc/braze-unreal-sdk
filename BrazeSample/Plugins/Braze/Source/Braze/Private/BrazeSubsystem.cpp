@@ -64,8 +64,8 @@ void UBrazeSubsystem::AndroidSetLogLevel(EBrazeLogLevel BrazeLogLevel)
 {
 #if PLATFORM_ANDROID
 	JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
-	const jclass ClassAppboyLogger = FAndroidApplication::FindJavaClass("com/appboy/support/AppboyLogger");
-	const jmethodID MethodSetLogLevel = Env->GetStaticMethodID(ClassAppboyLogger, "setLogLevel", "(I)V");
+	const jclass ClassBrazeLogger = FAndroidApplication::FindJavaClass("com/braze/support/BrazeLogger");
+	const jmethodID MethodSetLogLevel = Env->GetStaticMethodID(ClassBrazeLogger, "setLogLevel", "(I)V");
 
 	int32 Level = static_cast<int32>(BrazeLogLevel);
 	if (BrazeLogLevel == EBrazeLogLevel::Suppress)
@@ -74,7 +74,7 @@ void UBrazeSubsystem::AndroidSetLogLevel(EBrazeLogLevel BrazeLogLevel)
 		Level = 2147483647;
 	}
 
-	Env->CallStaticVoidMethod(ClassAppboyLogger, MethodSetLogLevel, static_cast<int32>(Level));
+	Env->CallStaticVoidMethod(ClassBrazeLogger, MethodSetLogLevel, static_cast<int32>(Level));
 #endif 
 }
 
@@ -83,13 +83,13 @@ void UBrazeSubsystem::EnableSDK()
 {
 #if PLATFORM_ANDROID
 	JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
-	const jclass ClassAppboy = FAndroidApplication::FindJavaClass("com/appboy/Appboy");
+	const jclass ClassBraze = FAndroidApplication::FindJavaClass("com/braze/Braze");
 	
 	const jmethodID MethodGetApplicationContext = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "getApplicationContext", "()Landroid/content/Context;", false);
 	const FScopedJavaObject<jobject> ApplicationContext = NewScopedJavaObject(Env, FJavaWrapper::CallObjectMethod(Env, FJavaWrapper::GameActivityThis, MethodGetApplicationContext));
 
-	const jmethodID MethodEnableSDK = Env->GetStaticMethodID(ClassAppboy, "enableSdk", "(Landroid/content/Context;)V");
-	Env->CallStaticVoidMethod(ClassAppboy, MethodEnableSDK, *ApplicationContext);
+	const jmethodID MethodEnableSDK = Env->GetStaticMethodID(ClassBraze, "enableSdk", "(Landroid/content/Context;)V");
+	Env->CallStaticVoidMethod(ClassBraze, MethodEnableSDK, *ApplicationContext);
 #elif PLATFORM_IOS 
 	dispatch_sync(dispatch_get_main_queue(), ^{
 		[Appboy requestEnableSDKOnNextAppRun];
@@ -101,13 +101,13 @@ void UBrazeSubsystem::DisableSDK()
 {
 #if PLATFORM_ANDROID
 	JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
-	const jclass ClassAppboy = FAndroidApplication::FindJavaClass("com/appboy/Appboy");
+	const jclass ClassBraze = FAndroidApplication::FindJavaClass("com/braze/Braze");
 
 	const jmethodID MethodGetApplicationContext = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "getApplicationContext", "()Landroid/content/Context;", false);
 	const FScopedJavaObject<jobject> ApplicationContext = NewScopedJavaObject(Env, FJavaWrapper::CallObjectMethod(Env, FJavaWrapper::GameActivityThis, MethodGetApplicationContext));
 
-	const jmethodID MethodEnableSDK = Env->GetStaticMethodID(ClassAppboy, "disableSdk", "(Landroid/content/Context;)V");
-	Env->CallStaticVoidMethod(ClassAppboy, MethodEnableSDK, *ApplicationContext);
+	const jmethodID MethodDisableSDK = Env->GetStaticMethodID(ClassBraze, "disableSdk", "(Landroid/content/Context;)V");
+	Env->CallStaticVoidMethod(ClassBraze, MethodDisableSDK, *ApplicationContext);
 #elif PLATFORM_IOS 
 	dispatch_sync(dispatch_get_main_queue(), ^{
 		[Appboy disableSDK];
@@ -121,13 +121,13 @@ void UBrazeSubsystem::WipeData()
 {
 #if PLATFORM_ANDROID
 	JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
-	const jclass ClassAppboy = FAndroidApplication::FindJavaClass("com/appboy/Appboy");
+	const jclass ClassBraze = FAndroidApplication::FindJavaClass("com/braze/Braze");
 
 	const jmethodID MethodGetApplicationContext = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "getApplicationContext", "()Landroid/content/Context;", false);
 	const FScopedJavaObject<jobject> ApplicationContext = NewScopedJavaObject(Env, FJavaWrapper::CallObjectMethod(Env, FJavaWrapper::GameActivityThis, MethodGetApplicationContext));
 
-	const jmethodID MethodWipeData = Env->GetStaticMethodID(ClassAppboy, "wipeData", "(Landroid/content/Context;)V");
-	Env->CallStaticVoidMethod(ClassAppboy, MethodWipeData, *ApplicationContext);
+	const jmethodID MethodWipeData = Env->GetStaticMethodID(ClassBraze, "wipeData", "(Landroid/content/Context;)V");
+	Env->CallStaticVoidMethod(ClassBraze, MethodWipeData, *ApplicationContext);
 #elif PLATFORM_IOS
 
 	dispatch_sync(dispatch_get_main_queue(), ^{

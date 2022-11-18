@@ -6,18 +6,25 @@
 NS_ASSUME_NONNULL_BEGIN
 @protocol ABKIDFADelegate <NSObject>
 /*!
- * The result of [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString].
+ * Asks the delegate to return a valid IDFA for the current user.
  *
- * @return The current IDFA for the user.
+ * Use this delegate to pass the IDFA to Braze. Braze does not collect IDFA automatically.
+ *
+ * @return The current users's IDFA UUID.
  */
 - (NSString *)advertisingIdentifierString;
 
 /*!
- * The result from [[ASIdentifierManager sharedManager] isAdvertisingTrackingEnabled].
+ * Asks the delegate to return whether advertising tracking is enabled for the current user.
  *
- * @return If advertising tracking is enabled.
+ * Your delegate implementation should use ATTrackingManager on iOS 14+ and ASIdentifierManager on earlier iOS versions.
+ *
+ * An example implementation is available here:
+ * https://github.com/Appboy/appboy-ios-sdk/blob/master/Example/Stopwatch/Sources/Utils/IDFADelegate.m
+ *
+ * @return YES if advertising tracking is enabled for iOS 14 and earlier or if AppTrackingTransparency (ATT) is authorized with iOS 14+, NO otherwise
  */
-- (BOOL)isAdvertisingTrackingEnabled;
+- (BOOL)isAdvertisingTrackingEnabledOrATTAuthorized;
 
 @end
 NS_ASSUME_NONNULL_END

@@ -10,7 +10,7 @@
 class UBrazeConfig;
 
 /**
- * LogLevel matching the android.util.log priority constants as well as AppboyLogger.Suppress
+ * LogLevel matching the android.util.log priority constants as well as BrazeLogger.Suppress
  */
 UENUM(BlueprintType)
 enum class EBrazeLogLevel : uint8 {
