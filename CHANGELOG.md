@@ -3,9 +3,10 @@
 ##### Updated
 - Updates Android support:
   - Updates Braze Android SDK to version `24.1.0`.
-  - Changes the call to `registerActivityLifecycleCallbacks` method (only available on Android API 29+) to the Braze's own backwards compatible `registerOnApplication` method.
   - Updates Gradle script generator to always include Kotlin plugin dependency, not just when `Firebase Cloud Messaging` is enabled.
 
+##### Fixed
+- Fixed an issue where a call to `Activity.registerActivityLifecycleCallbacks()` would cause a crash on API 28 and below devices.
 ## 2.0.0
 
 ##### Breaking
