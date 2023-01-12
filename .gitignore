@@ -1,6 +1,9 @@
 # Visual Studio user specific files
 .vs/
 
+# VS Code user specific files
+.vscode/
+
 # macOS
 .DS_Store
 

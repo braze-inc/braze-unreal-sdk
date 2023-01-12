@@ -4,7 +4,7 @@
 	<!-- init section is always evaluated once per architecture -->
 	<init>
 		<log text="Braze SDK init"/>
-	
+
 		<setBoolFromProperty result="bFCMEnabled" ini="Engine" section="/Script/Braze.BrazeConfig" property="bEnableFirebaseCloudMessagingSupport" default="false"/>
 		<if condition="bFCMEnabled">
 			<true>
@@ -28,23 +28,27 @@
 
 	<!--  optional base build.gradle buildscript additions -->
 	<buildscriptGradleAdditions>
+		<insert>
+			repositories {
+				google()
+				mavenCentral()
+			}
+
+			dependencies {
+				classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0'
+			}
+		</insert>
 		<if condition="bFCMEnabled">
 			<true>
 				<insert>
-	repositories {
-		google()
-		mavenCentral()
-	}
-
-	dependencies {
-		classpath 'com.google.gms:google-services:4.3.4' // google-services plugin
-		classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0'
-	}
+		dependencies {
+			classpath 'com.google.gms:google-services:4.3.4' // google-services plugin
+		}
 				</insert>
 			</true>
 		</if>
 	</buildscriptGradleAdditions>
-	
+
 	<!-- optional app build.gradle additions -->
 	<buildGradleAdditions>
 		<insert>
@@ -55,7 +59,7 @@
 	}
 
 	dependencies {
-		implementation 'com.appboy:android-sdk-ui:23.0.0'
+		implementation 'com.appboy:android-sdk-ui:24.1.0'
 
 		<!-- Enforce minimal versions of these dependencies to overwrite UE4's requirements for older versions that result in build conflicts -->
 		implementation('com.google.android.gms:play-services-auth') { version { require '17.0.0' } }
@@ -78,7 +82,7 @@
 		}
 	}
 		</insert>
-		
+
 		<!-- Firebase Cloud Messaging dependencies -->
 		<if condition="bFCMEnabled">
 			<true>
@@ -86,13 +90,13 @@
 	dependencies {
 		implementation 'com.google.firebase:firebase-messaging:23.0.0'
 	}
-	
+
 	apply plugin: 'com.google.gms.google-services'
 				</insert>
 			</true>
 		</if>
 	</buildGradleAdditions>
- 
+
 	<!-- optional updates applied to AndroidManifest.xml -->
 	<androidManifestUpdates>
 		<addPermission android:name="android.permission.INTERNET" />

@@ -58,16 +58,16 @@ bool UBrazeAndroid::Init(const UBrazeConfig& Config)
 	const jmethodID MethodSetInAppMessageTestPushEagerDisplayEnabled = FJavaWrapper::FindMethod(Env, ClassBrazeConfigBuilder, "setInAppMessageTestPushEagerDisplayEnabled", "(Z)Lcom/braze/configuration/BrazeConfig$Builder;", false);
 	const jmethodID MethodSetAutomaticGeofenceRequestsEnabled = FJavaWrapper::FindMethod(Env, ClassBrazeConfigBuilder, "setAutomaticGeofenceRequestsEnabled", "(Z)Lcom/braze/configuration/BrazeConfig$Builder;", false);
 	const jmethodID MethodSetHandlePushDeepLinksAutomatically = FJavaWrapper::FindMethod(Env, ClassBrazeConfigBuilder, "setHandlePushDeepLinksAutomatically", "(Z)Lcom/braze/configuration/BrazeConfig$Builder;", false);
-    const jmethodID MethodSetSdkMetadata = FJavaWrapper::FindMethod(Env, ClassBrazeConfigBuilder, "setSdkMetadata", "(Ljava/util/EnumSet;)Lcom/braze/configuration/BrazeConfig$Builder;", false);
+	const jmethodID MethodSetSdkMetadata = FJavaWrapper::FindMethod(Env, ClassBrazeConfigBuilder, "setSdkMetadata", "(Ljava/util/EnumSet;)Lcom/braze/configuration/BrazeConfig$Builder;", false);
 	const jmethodID MethodBuild = FJavaWrapper::FindMethod(Env, ClassBrazeConfigBuilder, "build", "()Lcom/braze/configuration/BrazeConfig;", false);
-	
+
 	// begin building from config
 	const jmethodID MethodInitBuilder = FJavaWrapper::FindMethod(Env, ClassBrazeConfigBuilder, "<init>", "()V", false);
 	const FScopedJavaObject<jobject> Builder = NewScopedJavaObject(Env, Env->NewObject(ClassBrazeConfigBuilder, MethodInitBuilder));
-	
+
 	const FScopedJavaObject<jstring> ApiKey = FJavaHelper::ToJavaString(Env, Config.AndroidApiKey);
 	Env->DeleteLocalRef(FJavaWrapper::CallObjectMethod(Env, *Builder, MethodSetApiKey, *ApiKey));
-	
+
 	if (!Config.CustomEndpoint.IsEmpty())
 	{
 		const FScopedJavaObject<jstring> CustomEndpoint = FJavaHelper::ToJavaString(Env, Config.CustomEndpoint);
@@ -117,16 +117,16 @@ bool UBrazeAndroid::Init(const UBrazeConfig& Config)
 	Env->DeleteLocalRef(FJavaWrapper::CallObjectMethod(Env, *Builder, MethodSetInAppMessageTestPushEagerDisplayEnabled, Config.bInAppMessageTestPushEagerDisplayEnabled));
 	Env->DeleteLocalRef(FJavaWrapper::CallObjectMethod(Env, *Builder, MethodSetAutomaticGeofenceRequestsEnabled, Config.bAutomaticGeofenceRequestsEnabled));
 
-    // Set SDK Metadata
-    const jclass ClassEnumSet = Env->FindClass("java/util/EnumSet");
-    const jmethodID MethodEnumSetOf = FJavaWrapper::FindStaticMethod(Env, ClassEnumSet, "of", "(Ljava/lang/Enum;)Ljava/util/EnumSet;", false);
-    FScopedJavaObject<jobject> SdkMetadataEnumField = BrazeConversions::GetEnumFieldJavaObject("com/braze/enums/BrazeSdkMetadata", "UNREAL");
-    const FScopedJavaObject<jobject> SdkMetadataEnumSet(Env, Env->CallStaticObjectMethod(ClassEnumSet, MethodEnumSetOf, *SdkMetadataEnumField));
-    Env->DeleteLocalRef(FJavaWrapper::CallObjectMethod(Env, *Builder, MethodSetSdkMetadata, *SdkMetadataEnumSet));
-	
+	// Set SDK Metadata
+	const jclass ClassEnumSet = Env->FindClass("java/util/EnumSet");
+	const jmethodID MethodEnumSetOf = FJavaWrapper::FindStaticMethod(Env, ClassEnumSet, "of", "(Ljava/lang/Enum;)Ljava/util/EnumSet;", false);
+	FScopedJavaObject<jobject> SdkMetadataEnumField = BrazeConversions::GetEnumFieldJavaObject("com/braze/enums/BrazeSdkMetadata", "UNREAL");
+	const FScopedJavaObject<jobject> SdkMetadataEnumSet(Env, Env->CallStaticObjectMethod(ClassEnumSet, MethodEnumSetOf, *SdkMetadataEnumField));
+	Env->DeleteLocalRef(FJavaWrapper::CallObjectMethod(Env, *Builder, MethodSetSdkMetadata, *SdkMetadataEnumSet));
+
 	// build the BrazeConfig object
 	const FScopedJavaObject<jobject> BrazeConfig = NewScopedJavaObject(Env, FJavaWrapper::CallObjectMethod(Env, *Builder, MethodBuild));
-	
+
 	const jclass ClassBraze = FAndroidApplication::FindJavaClass("com/braze/Braze");
 	const jmethodID MethodConfigure = FJavaWrapper::FindStaticMethod(Env, ClassBraze, "configure", "(Landroid/content/Context;Lcom/braze/configuration/BrazeConfig;)Z", false);
 	Env->CallStaticBooleanMethod(ClassBraze, MethodConfigure, ApplicationContext, *BrazeConfig);
@@ -135,8 +135,10 @@ bool UBrazeAndroid::Init(const UBrazeConfig& Config)
 	const jclass ClassBrazeActivityLifecycleCallbackListener = FAndroidApplication::FindJavaClass("com/braze.BrazeActivityLifecycleCallbackListener");
 	const jmethodID MethodInitBrazeActivityLifecycleCallbackListener = FJavaWrapper::FindMethod(Env, ClassBrazeActivityLifecycleCallbackListener, "<init>", "()V", false);
 	const FScopedJavaObject<jobject> BrazeActivityLifecycleCallbackListener = NewScopedJavaObject(Env, Env->NewObject(ClassBrazeActivityLifecycleCallbackListener, MethodInitBrazeActivityLifecycleCallbackListener));
-	const jmethodID MethodRegisterActivityLifecycleCallbacks = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "registerActivityLifecycleCallbacks", "(Landroid/app/Application$ActivityLifecycleCallbacks;)V", false);
-	FJavaWrapper::CallVoidMethod(Env, FJavaWrapper::GameActivityThis, MethodRegisterActivityLifecycleCallbacks, *BrazeActivityLifecycleCallbackListener);
+
+	// Call the backwards compatible "registerOnApplication" method instead of the Activity lifecycle registration method only available on API 29+
+	const jmethodID MethodRegisterOnApplication = FJavaWrapper::FindMethod(Env, ClassBrazeActivityLifecycleCallbackListener, "registerOnApplication", "(Landroid/content/Context;)V", false);
+	FJavaWrapper::CallVoidMethod(Env, *BrazeActivityLifecycleCallbackListener, MethodRegisterOnApplication, ApplicationContext);
 
 	return true;
 }
@@ -178,10 +180,10 @@ void UBrazeAndroid::LogCustomEventWithProperties(const FString& EventName, const
 
 	const FScopedJavaObject<jobject> BrazeInstance = GetBrazeInstance();
 	const jclass ClassBraze = FAndroidApplication::FindJavaClass("com/braze/Braze");
-	
+
 	const FScopedJavaObject<jstring> EventString = FJavaHelper::ToJavaString(Env, EventName);
 	const FScopedJavaObject<jobject> BrazePropertiesInstance = BrazeConversions::ToJavaBrazeProperties(Properties);
-	
+
 	const jmethodID MethodLogCustomEvent = FJavaWrapper::FindMethod(Env, ClassBraze, "logCustomEvent", "(Ljava/lang/String;Lcom/braze/models/outgoing/BrazeProperties;)V", false);
 	FJavaWrapper::CallVoidMethod(Env, *BrazeInstance, MethodLogCustomEvent, *EventString, *BrazePropertiesInstance);
 }
@@ -195,7 +197,7 @@ void UBrazeAndroid::LogPurchase(const FString& ProductIdentifier, const FString&
 	const FScopedJavaObject<jstring> ProductIdentifierString = FJavaHelper::ToJavaString(Env, ProductIdentifier);
 	const FScopedJavaObject<jstring> CurrencyCodeString = FJavaHelper::ToJavaString(Env, CurrencyCode);
 	const FScopedJavaObject<jobject> PriceBigDecimal = BrazeConversions::ToJavaBigDecimal(Price);
-	
+
 	const jmethodID MethodLogPurchase = FJavaWrapper::FindMethod(Env, ClassBraze, "logPurchase", "(Ljava/lang/String;Ljava/lang/String;Ljava/math/BigDecimal;I)V", false);
 	FJavaWrapper::CallVoidMethod(Env, *BrazeInstance, MethodLogPurchase, *ProductIdentifierString, *CurrencyCodeString, *PriceBigDecimal, static_cast<int32>(Quantity));
 }
@@ -233,4 +235,4 @@ UBrazeUser* UBrazeAndroid::GetCurrentUser() const
 	return NewUser;
 }
 
-#endif 
+#endif
