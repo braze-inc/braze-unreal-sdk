@@ -1,3 +1,13 @@
+## 2.2.0
+
+##### Fixed
+- Fixes Android issues:
+  - Fixed issues with some `BrazeUser` functions causing crashes.
+
+##### Updated
+- Updates iOS support:
+  - Framework rebuilt with Xcode 13 to support Xcode 13 build environment and platforms as old as iOS 9.
+
 ## 2.1.0
 
 ##### Updated

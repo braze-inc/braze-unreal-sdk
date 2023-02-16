@@ -190,7 +190,7 @@ bool UBrazeUserAndroid::SetGender(EBrazeGender Gender)
 	const FScopedJavaObject<jobject> GenderValue = BrazeConversions::EBrazeGenderToJObject(Gender);
 
 	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
-	const jmethodID MethodSetGender = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setGender", "(Lcom/appboy/enums/Gender;)Z", false);
+	const jmethodID MethodSetGender = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setGender", "(Lcom/braze/enums/Gender;)Z", false);
 
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodSetGender, *GenderValue);
 }
@@ -221,7 +221,7 @@ bool UBrazeUserAndroid::SetDateOfBirth(int32 Year, EBrazeMonth Month, int32 Day)
 	const FScopedJavaObject<jobject> MonthValue = BrazeConversions::EBrazeMonthToJObject(Month);
 
 	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
-	const jmethodID MethodSetDateOfBirth = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setDateOfBirth", "(ILcom/appboy/enums/Month;I)Z", false);
+	const jmethodID MethodSetDateOfBirth = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setDateOfBirth", "(ILcom/braze/enums/Month;I)Z", false);
 
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodSetDateOfBirth, Year, *MonthValue, Day);
 }
@@ -232,7 +232,7 @@ bool UBrazeUserAndroid::SetPushSubscriptionType(EBrazeNotificationSubscriptionTy
 	const FScopedJavaObject<jobject> SubscriptionTypeValue = BrazeConversions::EBrazeNotificationSubscriptionTypeToJObject(SubscriptionType);
 
 	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
-	const jmethodID MethodSetPushSubscriptionType = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setPushNotificationSubscriptionType", "(Lcom/appboy/enums/NotificationSubscriptionType;)Z", false);
+	const jmethodID MethodSetPushSubscriptionType = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setPushNotificationSubscriptionType", "(Lcom/braze/enums/NotificationSubscriptionType;)Z", false);
 
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodSetPushSubscriptionType, *SubscriptionTypeValue);
 }
@@ -243,7 +243,7 @@ bool UBrazeUserAndroid::SetEmailSubscriptionType(EBrazeNotificationSubscriptionT
 	const FScopedJavaObject<jobject> SubscriptionTypeValue = BrazeConversions::EBrazeNotificationSubscriptionTypeToJObject(SubscriptionType);
 
 	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
-	const jmethodID MethodSetPushSubscriptionType = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setEmailNotificationSubscriptionType", "(Lcom/appboy/enums/NotificationSubscriptionType;)Z", false);
+	const jmethodID MethodSetPushSubscriptionType = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setEmailNotificationSubscriptionType", "(Lcom/braze/enums/NotificationSubscriptionType;)Z", false);
 
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodSetPushSubscriptionType, *SubscriptionTypeValue);
 }
@@ -254,7 +254,7 @@ bool UBrazeUserAndroid::SetAttributionData(const FBrazeAttributionData& Attribut
 	const FScopedJavaObject<jobject> AttributionDataValue = BrazeConversions::AttributionDataToJObject(AttributionData);
 
 	const jclass ClassBrazeUser = FAndroidApplication::FindJavaClass("com/braze/BrazeUser");
-	const jmethodID MethodSetAttributionData = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setAttributionData", "(Lcom/appboy/models/outgoing/AttributionData;)Z", false);
+	const jmethodID MethodSetAttributionData = FJavaWrapper::FindMethod(Env, ClassBrazeUser, "setAttributionData", "(Lcom/braze/models/outgoing/AttributionData;)Z", false);
 
 	return FJavaWrapper::CallBooleanMethod(Env, UserJObject, MethodSetAttributionData, *AttributionDataValue);
 }

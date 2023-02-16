@@ -116,8 +116,8 @@ namespace BrazeConversions
 		check(FieldName != nullptr);
 
 		JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
-		const jclass EnumGender = FAndroidApplication::FindJavaClass("com/appboy/enums/Gender");
-		const jfieldID EnumField = Env->GetStaticFieldID(EnumGender, FieldName, "Lcom/appboy/enums/Gender;");
+		const jclass EnumGender = FAndroidApplication::FindJavaClass("com/braze/enums/Gender");
+		const jfieldID EnumField = Env->GetStaticFieldID(EnumGender, FieldName, "Lcom/braze/enums/Gender;");
 		return FScopedJavaObject<jobject>(Env, Env->GetStaticObjectField(EnumGender, EnumField));
 	}
 
@@ -142,8 +142,8 @@ namespace BrazeConversions
 		check(FieldName != nullptr);
 
 		JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
-		const jclass EnumMonth = FAndroidApplication::FindJavaClass("com/appboy/enums/Month");
-		const jfieldID EnumField = Env->GetStaticFieldID(EnumMonth, FieldName, "Lcom/appboy/enums/Month;");
+		const jclass EnumMonth = FAndroidApplication::FindJavaClass("com/braze/enums/Month");
+		const jfieldID EnumField = Env->GetStaticFieldID(EnumMonth, FieldName, "Lcom/braze/enums/Month;");
 		return FScopedJavaObject<jobject>(Env, Env->GetStaticObjectField(EnumMonth, EnumField));
 	}
 
@@ -159,8 +159,8 @@ namespace BrazeConversions
 		check(FieldName != nullptr);
 
 		JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
-		const jclass EnumNotificationSubscriptionType = FAndroidApplication::FindJavaClass("com/appboy/enums/NotificationSubscriptionType");
-		const jfieldID EnumField = Env->GetStaticFieldID(EnumNotificationSubscriptionType, FieldName, "Lcom/appboy/enums/NotificationSubscriptionType;");
+		const jclass EnumNotificationSubscriptionType = FAndroidApplication::FindJavaClass("com/braze/enums/NotificationSubscriptionType");
+		const jfieldID EnumField = Env->GetStaticFieldID(EnumNotificationSubscriptionType, FieldName, "Lcom/braze/enums/NotificationSubscriptionType;");
 		return FScopedJavaObject<jobject>(Env, Env->GetStaticObjectField(EnumNotificationSubscriptionType, EnumField));
 	}
 
@@ -168,7 +168,7 @@ namespace BrazeConversions
 	{
 		JNIEnv* const Env = FAndroidApplication::GetJavaEnv();
 
-		const jclass ClassAttributionData = FAndroidApplication::FindJavaClass("com/appboy/models/outgoing/AttributionData");
+		const jclass ClassAttributionData = FAndroidApplication::FindJavaClass("com/braze/models/outgoing/AttributionData");
 		const jmethodID MethodInitAttributionData = FJavaWrapper::FindMethod(Env, ClassAttributionData, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false);
 
 		return FScopedJavaObject<jobject>(Env, Env->NewObject(ClassAttributionData, MethodInitAttributionData, *FJavaHelper::ToJavaString(Env, AttributionData.Network),
