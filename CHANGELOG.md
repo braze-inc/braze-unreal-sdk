@@ -1,3 +1,8 @@
+## 2.3.0
+
+##### Fixed
+- Fixes text encoding issues on iOS. The plugin now correctly converts strings to UTF-8 before sending them to the Braze SDK.
+
 ## 2.2.0
 
 ##### Fixed

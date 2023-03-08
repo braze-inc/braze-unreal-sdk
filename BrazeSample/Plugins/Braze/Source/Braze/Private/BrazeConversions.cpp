@@ -9,7 +9,7 @@ namespace BrazeConversions
 #if PLATFORM_IOS
 	NSString* FStringToNSString(const FString& String)
 	{
-		return [NSString stringWithUTF8String: TCHAR_TO_ANSI(*String)];
+		return [NSString stringWithUTF8String: TCHAR_TO_UTF8(*String)];
 	}
 
 	NSDate* FDateTimeToNSDate(const FDateTime& DateTime)
