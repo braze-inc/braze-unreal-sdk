@@ -1,3 +1,9 @@
+## 2.4.0
+
+##### Fixed
+- Fixes iOS issues:
+  - Use a method swizzling approach to handling notification device tokens to improve the Braze SDK compatibility with third party libraries.
+
 ## 2.3.0
 
 ##### Fixed

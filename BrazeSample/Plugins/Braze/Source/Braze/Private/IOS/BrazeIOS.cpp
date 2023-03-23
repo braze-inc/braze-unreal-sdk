@@ -11,6 +11,7 @@
 #include "IOS/IOSAppDelegate.h"
 #import "IOS/BrazeNotificationDelegate.h"
 #import "IOS/AppboySDK/Appboy.h"
+#import "BrazeNotificationSwizzling.h"
 
 bool UBrazeIOS::Init(const UBrazeConfig& Config)
 {
@@ -21,6 +22,8 @@ bool UBrazeIOS::Init(const UBrazeConfig& Config)
 	}
 
 	dispatch_sync(dispatch_get_main_queue(), ^{
+		[BrazeNotificationSwizzling swizzle];
+
 		UIApplication * Application = [UIApplication sharedApplication];
 		IOSAppDelegate * AppDelegate = (IOSAppDelegate*)[Application delegate];
 
@@ -47,7 +50,9 @@ bool UBrazeIOS::Init(const UBrazeConfig& Config)
 	});
 
 	// Enable Push Notifications
-	FCoreDelegates::ApplicationRegisteredForRemoteNotificationsDelegate.AddUObject(this, &UBrazeIOS::ApplicationRegisteredForRemoteNotifications);
+	// - The notification device token is retrieved via method swizzling
+	// - See: `[BrazeNotificationSwizzling swizzle]` implementation
+
 	dispatch_sync(dispatch_get_main_queue(), ^ {
 		UNAuthorizationOptions options = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
 			
@@ -74,16 +79,6 @@ bool UBrazeIOS::Init(const UBrazeConfig& Config)
 	});
 	
 	return true;
-}
-
-void UBrazeIOS::ApplicationRegisteredForRemoteNotifications(TArray<uint8> Token)
-{
-	dispatch_sync(dispatch_get_main_queue(), ^ {
-		NSMutableData* TokenData = [[NSMutableData alloc]init];
-		[TokenData appendBytes: Token.GetData() length: Token.Num()] ;
-		[[Appboy sharedInstance] registerDeviceToken: TokenData];
-		[TokenData release];
-	});
 }
 
 void UBrazeIOS::ChangeUser(const FString& UserId)
