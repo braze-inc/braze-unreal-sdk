@@ -12,6 +12,7 @@
 #import "IOS/BrazeNotificationDelegate.h"
 #import "IOS/AppboySDK/Appboy.h"
 #import "BrazeNotificationSwizzling.h"
+#import "BrazeUniversalLinkForwarder.h"
 
 bool UBrazeIOS::Init(const UBrazeConfig& Config)
 {
@@ -46,7 +47,8 @@ bool UBrazeIOS::Init(const UBrazeConfig& Config)
 		      withLaunchOptions: AppDelegate.launchOptions
 		      withAppboyOptions: AppboyOptions];
 
-        [[Appboy sharedInstance] addSdkMetadata:@[ABKSdkMetadataUnreal]];
+    [[Appboy sharedInstance] addSdkMetadata:@[ABKSdkMetadataUnreal]];
+    [Appboy sharedInstance].appboyUrlDelegate = [BrazeUniversalLinkForwarder sharedInstance];
 	});
 
 	// Enable Push Notifications

@@ -1,3 +1,11 @@
+## 2.5.0
+
+##### Added
+- Adds support for automatic universal links forwarding on iOS.
+  - This enables the Braze SDK to automatically forward universal links to the iOS system method [`UIApplicationDelegate.application(_:continue:restorationHandler:)`](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1623072-application).
+  - To enable this feature, you must add your app `<app name>.entitlements` file to the 'Copy Bundle Resources' build phase in Xcode.
+    - In an Unreal Engine 4 project, the `<app name>.entitlements` file must be added to either `[YourProject]/Build/IOS` or `[YourProject]/Build/IOS/Cloud` depending on your setup.
+
 ## 2.4.0
 
 ##### Fixed
